@@ -1,10 +1,10 @@
 #Requires AutoHotkey v2.0
 #MaxThreadsPerHotkey 2
 
-; ╔══════════════════════════════════════════════╗
-; ║        FH6 Wheelspin Macro					   ║
-; ║        Cherry Blossom Edition               		   ║
-; ╚══════════════════════════════════════════════╝
+; ╔═════════════════════════════════════════╗
+; ║        FH6 Wheelspin Macro				║
+; ║        Cyber Noir Edition               ║
+; ╚═════════════════════════════════════════╝
 
 global ActiveMode	:= ""
 global MasterMode	:= ""
@@ -68,10 +68,10 @@ global GuiWidth		:= "w270"
 ;  PALETTE HELPER
 ; ══════════════════════════════════════════════
 GetPalette() {
-    global DarkMode
-    p := Map()
+	global DarkMode
+	p := Map()
 
-    if DarkMode {
+	if DarkMode {
         p["bg"]       := "0B0F14"
         p["panel"]    := "111826"
         p["accent"]   := "00E5FF"
