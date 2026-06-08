@@ -19,7 +19,7 @@ The original base script was developed by **6ftFish**, and this version has been
 
 ## 🚀 Quick Start
 
-1. Launch Forza Horizon 6 and load into Free Roam.
+1. Launch Forza Horizon 6 and load into Home Menu.
 2. Ensure the Subaru Impreza 22B-STi Version is your only Favorited vehicle.
 3. Verify all Car Mastery perks are unlocked.
 4. Apply Tune Share Code: `293 391 902`
