@@ -107,7 +107,7 @@ Runs only the reward claiming process.
 *   Repeats claim cycles until manually stopped
 
 ### ♾️ Full Automation Loop (Hotkey: `` / ``)
-Combines all processes into a single continuous workflow (Race → Buy → Claim → Repeat). The macro will continuously cycle through all stages until stopped by the user. This mode is highly recommended for long unattended farming sessions *only after* timing has been properly verified on your system.
+Combines all processes into a single continuous workflow (Race → Buy → Claim → Repeat). The macro will continuously cycle through all stages until stopped by the user. This mode is highly recommended for long unattended farming sessions *only after* timing has been properly verified on your system.  
 🎥[Watch the Full Loop Demonstration](https://www.youtube.com/watch?v=6ezhyNeIYko)
 
 ### 🛑 Stopping Automation
@@ -127,7 +127,7 @@ Actively tracks total runtime, race session duration, buy/claim cycles, and esti
 Uses internal logic to estimate skill point gains per session, optimal car purchase counts, and expected completion times. The built-in estimator is grounded in repeated testing of the recommended EventLab route and vehicle setup.
 
 **Tested EventLab Results:**
-After multiple test sessions, the EventLab race consistently produced a minimum of **940 Skill Points** and a maximum of **945 Skill Points**, with a typical completion time of under 51 minutes. The application uses **940 Skill Points** as a conservative target value to avoid overestimating rewards.
+After multiple test sessions, the EventLab race consistently produced a minimum of **940 Skill Points** and a maximum of **945 Skill Points**, with a typical completion time of around 51 minutes. The application uses **940 Skill Points** as a conservative target value to avoid overestimating rewards.
 
 **Maximum Skill Point Calculation:**
 The in-game Skill Point cap is **999**. The application calculates your target based on your current points plus the estimated session gain, capping out automatically.
@@ -137,6 +137,16 @@ The in-game Skill Point cap is **999**. The application calculates your target b
 | 0 | 940 | 940 |
 | 50 | 940 | 990 |
 | 100 | 940 | 999 (capped) |
+
+### 2. The Reward Vehicles
+You can choose which vehicle the macro purchases and unlocks perks for via the GUI dropdown menu depending on your budget and preferred reward density. 
+Make sure to purchase and unlock the Soko 78 house to get a permanent 5% discount on Autoshow purchases.
+
+| Dropdown Choice | Cost Per Unit | Cost Per Unit after 5% Discount | Mastery Grid Rewards | Skill Points Cost | Optimal Strategy |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Subaru Impreza 22B-STi Version (1998)** | 86,000 CR | 81,700 CR | 1x Super Wheelspin | 30 Points | Max Yield: Dumps heavy credits to maximize total wheelspin volume as fast as possible. |
+| **Lamborghini Revuelto (2024)** | 365,000 CR | 346,750 CR | 1x Super Wheelspin + 3x Regular Wheelspins | 39 Points | **Payload Farming:** Best choice for high-roller accounts looking to quickly dump credits for massive amounts of wheelspins. |
+| **Dodge Viper GTS ACR (1999)** | 68,000 CR | 64,600 CR | 85,400 CR | 30 Points | Credit Flipping: Converts Skill Points back into raw cash for a quick return or a near-full vehicle refund. |
 
 ### 🎨 Theme System
 Dynamic UI switching between Dark Mode (Neon Void) and Light Mode (Neon Daylight).
@@ -160,7 +170,8 @@ Dynamic UI switching between Dark Mode (Neon Void) and Light Mode (Neon Daylight
 Before using the macro, ensure your game is properly configured. The automation relies heavily on consistent menus, timing, and UI positioning.
 
 ### 🏁 Starting Position
-Make sure you are in the **Home Menu**, loaded fully into an active session (no loading screens), with active keyboard input.
+Make sure you are in the **Home Menu**, loaded fully into an active session (no loading screens), with active keyboard input before starting any session.  
+> 📌 All sessions have the same starting position.
 
 <p align="center">
   <img width="2559" height="1439" alt="Starting Position" src="https://github.com/user-attachments/assets/e6c585b4-264e-4a4c-8cf8-8d4ed7144ffc" />

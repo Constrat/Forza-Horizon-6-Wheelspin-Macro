@@ -3,7 +3,7 @@
 
 ; ╔═════════════════════════════════════════╗
 ; ║        FH6 Wheelspin Macro				║
-; ║        Cyber Noir Edition v1.0.1        ║
+; ║        Cyber Noir Edition v1.1.0        ║
 ; ╚═════════════════════════════════════════╝
 
 global ActiveMode	:= ""
@@ -19,7 +19,7 @@ global Process_UI	:= ""
 
 global SkillPtsCount_In	:= 0
 global SkillPtsWant_In	:= 0
-global CarCount_In	:= 0
+global CarCount_In	    := 0
 
 global cActive		:= "FF8FAB"
 global cHighlight	:= "39FF14"
@@ -29,41 +29,43 @@ global cTextDim		:= "7A4A60"
 global RaceCount	:= 0
 global PointsCount	:= 0
 global CarCount		:= 0
-global ClaimCount	:= 0
+global UnlockCount	:= 0
 global SWheelCount	:= 0
 global WheelCount	:= 0
+global CreditCount	:= 0
 
 global TotalRunSeconds	:= 0
 global RaceRunSeconds	:= 0
 global BuyRunSeconds	:= 0
-global ClaimRunSeconds	:= 0
+global UnlockRunSeconds	:= 0
 global RaceLoadingTime	:= 52
 global FinLoadingTime	:= 40
 
-global RaceCount_UI	:= ""
+global RaceCount_UI	    := ""
 global PointsCount_UI	:= ""
-global CarCount_UI	:= ""
+global CarCount_UI	    := ""
 global SWheelCount_UI	:= ""
 global WheelCount_UI	:= ""
-global CodeTune_UI	:= ""
+global CreditCount_UI	:= ""
+global CodeTune_UI	    := ""
 global TotalRunTime_UI	:= ""
 global RaceRunTime_UI	:= ""
 global BuyRunTime_UI	:= ""
-global ClaimRunTime_UI	:= ""
-global CarSelect_UI	:= ""
-global CarsLabel_UI	:= ""
+global UnlockRunTime_UI	:= ""
+global CarSelect_UI	    := ""
+global CarsLabel_UI	    := ""
 global PointsLabel_UI	:= ""
-global TimeLabel_UI	:= ""
+global TimeLabel_UI	    := ""
 
-global SelectedCar	:= "Subaru Impreza 22B"
+global SelectedCar      := "Subaru Impreza 22B"
 global SelectedCarPoint	:= 30
-global PointsTotal 	:= 0
+global PointsTotal 	    := 0
 global PointsGained 	:= 0
-global TimeTotal 	:= 0
+global TimeTotal 	    := 0
 global AveragePoints 	:= 18.6
-global MaxPoints 	:= 940
+global MaxPoints 	    := 940
 
-global GuiWidth		:= "w270"
+global GuiWidth		    := "w270"
 
 ; ══════════════════════════════════════════════
 ;  PALETTE HELPER
@@ -118,8 +120,8 @@ GetPalette() {
 ;  BUILD GUI
 ; ══════════════════════════════════════════════
 BuildGui(savedVals := "") {
-    global MyGui, StatusText, RaceCount_UI, PointsCount_UI, CarCount_UI, SWheelCount_UI, WheelCount_UI
-    global TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, ClaimRunTime_UI
+    global MyGui, StatusText, RaceCount_UI, PointsCount_UI, CarCount_UI, SWheelCount_UI, WheelCount_UI, CreditCount_UI
+    global TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, UnlockRunTime_UI
     global PointsLabel_UI, TimeLabel_UI, CarsLabel_UI
     global Key_UI, Process_UI, CodeTune_UI, CodeEventLab_UI, CarSelect_UI
     global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, AveragePoints, MaxPoints, PointsTotal, PointsGained, TimeTotal
@@ -166,7 +168,7 @@ BuildGui(savedVals := "") {
     MyGui.Add("Text", "x30 y+6 w155 BackgroundTrans c" p["text"], "⟡  Car Purchase")
     CarCount_In := MyGui.Add("Edit", "x179 yp-3 w63 Center Number Background" p["editBg"] " c" p["text"], savedVals ? savedVals[3] : Floor(MaxPoints/SelectedCarPoint))
 
-    CarSelect_UI := MyGui.Add("DropDownList", "x55 y+10 w160 Choose1", ["Subaru Impreza 22B", "Lamborghini Revuelto"])
+    CarSelect_UI := MyGui.Add("DropDownList", "x55 y+10 w160 Choose1", ["Subaru Impreza 22B", "Lamborghini Revuelto", "Dodge Viper GTS ACR"])
     CarSelect_UI.SetFont("s9 Bold", "Segoe UI")
 
     ; ── Target ────────────────────────
@@ -176,7 +178,7 @@ BuildGui(savedVals := "") {
 
     PointsGained := GetMinScore(SkillPtsWant_In.Value)
     PointsTotal := PointsGained + SkillPtsCount_In.Value
-    TimeTotal := CalcTimeRace(SkillPtsWant_In.Value) + CalcTimeBuy(CarCount_In.Value) + CalcTimeClaim(CarCount_In.Value)
+    TimeTotal := CalcTimeRace(SkillPtsWant_In.Value) + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
 
     PointsLabel_UI := MyGui.Add("Text", "x14 y+9 w242 Center BackgroundTrans c" p["cIdle"], "Est. Skill Points Gained  —  " PointsGained)
     TimeLabel_UI := MyGui.Add("Text", "x14 y+2 w242 Center BackgroundTrans c" p["cIdle"], "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal) , Round((TimeTotal - Floor(TimeTotal)) * 60)))
@@ -186,7 +188,7 @@ BuildGui(savedVals := "") {
 
     SkillPtsCount_In.OnEvent("Change", UpdateSkillPts)
     SkillPtsCount_In.OnEvent("LoseFocus", ValidateSkillPts)
-
+ 
     SkillPtsWant_In.OnEvent("Change", UpdateSkillPtsWant)
     SkillPtsWant_In.OnEvent("LoseFocus", ValidateSkillPtsWant)
 
@@ -214,9 +216,10 @@ BuildGui(savedVals := "") {
     BuyRunTime_UI   := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "⏱   Buy Time Running   —   00:00")
     CarCount_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🚗   Car Purchased   —   0")
 
-    ClaimRunTime_UI   := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "⏱   Claim Time Running   —   00:00")
+    UnlockRunTime_UI   := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "⏱   Unlock Time Running   —   00:00")
     SWheelCount_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🛞   Super Wheelspin   —   0")
     WheelCount_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🛞   Wheelspin   —   0")
+    CreditCount_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "💲   Credits   —   0 CR")
 
     ; ── Buttons ───────────────────────────────
     MyGui.Add("Text", "x14 y+13 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -232,10 +235,10 @@ BuildGui(savedVals := "") {
         "🚗   BUY  —   [")
     BuyBtn.OnEvent("Click", (*) => StartBuy())
 
-    ClaimBtn := MyGui.Add("Text",
+    UnlockBtn := MyGui.Add("Text",
         "x137 yp w119 h36 Center 0x200 Background" p["btnBg"] " c" p["btnText"],
-        "🛞   CLAIM  —   ]")
-    ClaimBtn.OnEvent("Click", (*) => StartClaim())
+        "🛞   UNLOCK  —   ]")
+    UnlockBtn.OnEvent("Click", (*) => StartUnlock())
 
     AllBtn := MyGui.Add("Text",
         "x14 y+6 w242 h36 Center 0x200 Background" p["btnBg"] " c" p["btnText"],
@@ -256,13 +259,13 @@ BuildGui(savedVals := "") {
 
     CodeTune_UI.OnEvent("Click", (*) => (
         A_Clipboard := "293391902",
-	SetTimer(() => ToolTip(), -2000)
+	    SetTimer(() => ToolTip(), -2000)
         ToolTip("Subaru 22B Tune Code Copied!")
     ))
 
     CodeEventLab_UI.OnEvent("Click", (*) => (
         A_Clipboard := "124198343",
-	SetTimer(() => ToolTip(), -2000)
+	    SetTimer(() => ToolTip(), -2000)
         ToolTip("EventLab Race Code Copied!")
     ))
 
@@ -282,7 +285,7 @@ ToggleTheme() {
     ; Capture current values before destroy
     saved := [
         SkillPtsCount_In.Value,
-	SkillPtsWant_In.Value,
+	    SkillPtsWant_In.Value,
         CarCount_In.Value,
     ]
 
@@ -303,7 +306,7 @@ ToggleTheme() {
 ; ══════════════════════════════════════════════
 \::StartRace()
 [::StartBuy()
-]::StartClaim()
+]::StartUnlock()
 /::ToggleAll()
 F12::Reload()
 
@@ -339,26 +342,26 @@ ToggleAll() {
 	MasterStart := true
 
         StartRace()
-	ActiveMode := ""
-	if !MasterMode
-	   break
+        ActiveMode := ""
+        if !MasterMode
+            break
 
         StartBuy()
-	ActiveMode := ""
-	if !MasterMode
-	   break
+        ActiveMode := ""
+        if !MasterMode
+            break
 
-        StartClaim()
-	ActiveMode := ""
-	if !MasterMode
-	   break
+        StartUnlock()
+        ActiveMode := ""
+        if !MasterMode
+            break
 
-	Process("Restarting Race...")
-	SkillPtsWant_In.Value += SkillPtsCount_In.Value	
-	SkillPtsCount_In.Value := 0
+        Process("Restarting Race...")
+        SkillPtsWant_In.Value += SkillPtsCount_In.Value	
+        SkillPtsCount_In.Value := 0
 
-	UpdateSkillPtsWant({Value: SkillPtsWant_In.Value})
-	ValidateSkillPtsWant({Value: SkillPtsWant_In.Value})
+        UpdateSkillPtsWant({Value: SkillPtsWant_In.Value})
+        ValidateSkillPtsWant({Value: SkillPtsWant_In.Value})
     }
     ActiveMode := ""
     MasterMode := ""
@@ -377,12 +380,12 @@ StartRace() {
     }
 
     if (ActiveMode = "Race") {
-        ;RaceCount		:= 0
+        ;RaceCount		    := 0
         TotalRunSeconds		:= 0
-	RaceRunSeconds		:= 0
-	PointsCount		:= 0
+        RaceRunSeconds		:= 0
+        PointsCount		    := 0
         ;RaceCount_UI.Value	:= "🏁   Loop Completed   —   0"
-	PointsCount_UI.Value	:= "💡   Est. Skill Points Gained   —   0"
+        PointsCount_UI.Value	:= "💡   Est. Skill Points Gained   —   0"
         RaceRunTime_UI.Value	:= "⏱   Race Time Running   —   00:00"
         StatusText.Value 	:= "⬤  Running..."
         StatusText.SetFont("c" cActive)
@@ -411,25 +414,26 @@ StartBuy() {
     }
 }
 
-StartClaim() {
+StartUnlock() {
     global ActiveMode
-    global StatusText, cActive, SWheelCount, WheelCount, ClaimCount, ClaimRunSeconds
-    global SWheelCount_UI, WheelCount_UI, ClaimRunTime_UI
+    global StatusText, cActive, SWheelCount, WheelCount, CreditCount, UnlockCount, UnlockRunSeconds
+    global SWheelCount_UI, WheelCount_UI, CreditCount_UI, UnlockRunTime_UI
 
-    if !ToggleMode("Claim") {
+    if !ToggleMode("Unlock") {
         StatusText.Value := "⬤  Stopping..."
         StatusText.SetFont("cFFB347")
     }
 
-    if (ActiveMode = "Claim") {
-	ClaimCount		:= 0
-        ClaimRunSeconds		:= 0
+    if (ActiveMode = "Unlock") {
+	    UnlockCount		        := 0
+        UnlockRunSeconds        := 0 
 		SWheelCount_UI.Value	:= "🛞   Super Wheelspin   —   0"
-		WheelCount_UI.Value	:= "🛞   Wheelspin   —   0"
-        ClaimRunTime_UI.Value	:= "⏱   Claim Time Running   —   00:00"
-        StatusText.Value 	:= "⬤  Running..."
+		WheelCount_UI.Value	    := "🛞   Wheelspin   —   0"
+		CreditCount_UI.Value	:= "💲   Credits   —   0 CR"
+        UnlockRunTime_UI.Value	:= "⏱   Unlock Time Running   —   00:00"
+        StatusText.Value 	    := "⬤  Running..."
         StatusText.SetFont("c" cActive)
-        ClaimLoop()
+        UnlockLoop()
     }
 }
 
@@ -441,13 +445,13 @@ PressKey(key, delay := 500) {
     global Key_UI, cHighlight, cIdle
 
     switch key {
-	case "Down": displayname := "↓"
-	case "Up": displayname := "↑"
-	case "Left": displayname := "←"
-	case "Right": displayname := "→"
-	case "w down": displayname := "W"
-	case "w up": displayname := "W"
-	Default : displayname := key
+        case "Down": displayname := "↓"
+        case "Up": displayname := "↑"
+        case "Left": displayname := "←"
+        case "Right": displayname := "→"
+        case "w down": displayname := "W"
+        case "w up": displayname := "W"
+        Default : displayname := key
     }
 
     Key_UI.Value := "➡️ Key     —   [ " displayName " ]"
@@ -468,127 +472,125 @@ Process(text) {
 RaceLoop() {
     global ActiveMode, MasterMode, MasterStart, SkillPtsCount_In, SkillPtsWant_In, CarCount_In
     global Key_UI, Process_UI, cActive, cHighlight, cIdle
-    global RaceCount, RaceCount_UI, PointsCount_UI, CarCount_UI, RaceRunTime_UI, TotalRunTime
+    global RaceCount, RaceCount_UI, PointsCount_UI, CarCount_UI, RaceRunTime_UI, TotalRunTime_UI
     global RaceLoadingTime, FinLoadingTime, AveragePoints, Maxpoints, PointsTotal, PointsGained, PointsCount, RaceRunSeconds
-
-    DriveTime		:= 30
 
     While (ActiveMode = "Race") {
 
-	TotalRunTime_UI.SetFont("c" cHighlight)
-	RaceRunTime_UI.SetFont("c" cHighlight)
-	Process_UI.SetFont("c" cHighlight)
-	Key_UI.SetFont("c" cHighlight)
+        TotalRunTime_UI.SetFont("c" cHighlight)
+        RaceRunTime_UI.SetFont("c" cHighlight)
+        Process_UI.SetFont("c" cHighlight)
+        Key_UI.SetFont("c" cHighlight)
 
-    SetTimer(TotalTimerTick, 1000)
-	SetTimer(RaceTimerTick, 1000)
-	
-	Process("Returning to Free Roam...")
-	PressKey("Esc", 10000)
+        SetTimer(TotalTimerTick, 1000)
+        SetTimer(RaceTimerTick, 1000)
+        
+        Process("Returning to Free Roam...")
+        PressKey("Esc", 10000)
 
-	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
-		break
-		
-	Process("Navigating Menu...")
-	PressKey("Esc", 1000)
-	PressKey("PgDn", 100)
-	PressKey("PgDn", 100)
-	PressKey("PgDn", 100)
-	PressKey("PgDn")
-
-	Process("Opening EventLab Menu...")
-	PressKey("Enter", 1000)
-	PressKey("Enter", 1500)
-	PressKey("Backspace")
-	PressKey("Up")
-	PressKey("Enter")
-
-	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
-        break
-	
-	Process("Entering EventLab code...")
-
-	PressKey("1", 50)
-	PressKey("2", 50)
-	PressKey("4", 50)
-	PressKey("1", 50)
-	PressKey("9", 50)
-	PressKey("8", 50)
-	PressKey("3", 50)
-	PressKey("4", 50)
-	PressKey("3", 50)
-	PressKey("Enter")
-	PressKey("Down")
-	PressKey("Enter", 5000)
-
-	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
-        break
-
-	Process("Entering EventLab...")
-	PressKey("Enter")
-	PressKey("Enter", 2000)
-	PressKey("Y")
-	PressKey("Enter")
-	PressKey("Esc")
-
-	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
-		break
-
-	Process("Loading EventLab...")
-	PressKey("Enter", 20000)
-
-	Process("Start Race Event...")
-	PressKey("Enter", 2500)
-
-	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
-        break
-	
-	Process("Countdown...")
-	Sleep(3000)
-
-	While (PointsCount < PointsGained)
-	{
-	    ;RaceCount_UI.SetFont("c" cHighlight)
-	    PointsCount_UI.SetFont("c" cHighlight)
-
-	    Process("Throttling...")
-
-	    PressKey("W", 50)
-	    PressKey("w down", 50)
-	    Sleep(30000)
-	    PressKey("w up", 50)
-
-	    if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+        if (ActiveMode != "Race" || (!MasterMode && MasterStart))
             break
-	    
-        ; ── Increment race counter ───────────
-        RaceCount++
-	    PointsCount := EstimateScore(RaceRunSeconds - RaceLoadingTime)
+            
+        Process("Navigating Menu...")
+        PressKey("Esc", 1000)
+        PressKey("PgDn", 100)
+        PressKey("PgDn", 100)
+        PressKey("PgDn", 100)
+        PressKey("PgDn")
 
-        ;RaceCount_UI.Value := "🏁   Loop Complete   —   " RaceCount
-	    PointsCount_UI.Value := "💡   Est. Skill Points Gained  —   " PointsCount
-	}
+        Process("Opening EventLab Menu...")
+        PressKey("Enter", 1000)
+        PressKey("Enter", 1500)
 
-	Process("Returning to Free Roam...")
-	PressKey("Esc", 1000)
-	PressKey("Right")
-	PressKey("Enter")
-	PressKey("Enter", 20000)
+        if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+            break
+        
+        Process("Entering EventLab code...")
+        PressKey("Backspace")
+        PressKey("Up")
+        PressKey("Enter", 1000)
 
-	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+        WriteNumber(124198343)
+
+        PressKey("Enter")
+        PressKey("Down")
+        PressKey("Enter", 6000)
+        PressKey("Enter")
+
+        ; Process("Navigating Favourited EventLab...")
+        ; Loop 7 {
+        ;     PressKey("PgDn", 50)
+        ; }
+        ; Sleep(2000)
+        ; PressKey("Enter", 3000)
+        
+        if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+            break
+
+        Process("Entering EventLab...")
+        PressKey("Enter", 2000)
+        PressKey("Y")
+        PressKey("Enter")
+        PressKey("Esc")
+
+        if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+            break
+
+        Process("Loading EventLab...")
+        PressKey("Enter", 20000)
+
+        Process("Start Race Event...")
+        PressKey("Enter", 2500)
+
+        if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+            break
+        
+        Process("Countdown...")
+        Sleep(3000)
+
+        While (PointsCount < PointsGained)
+        {
+            ;RaceCount_UI.SetFont("c" cHighlight)
+            PointsCount_UI.SetFont("c" cHighlight)
+
+            Process("Throttling...")
+
+            PressKey("W", 50)
+            PressKey("w down", 50)
+            Sleep(30000)
+            PressKey("w up", 50)
+
+            if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+                break
+            
+            ; ── Increment race counter ───────────
+            RaceCount++
+            PointsCount := EstimateScore(RaceRunSeconds - RaceLoadingTime)
+
+            ;RaceCount_UI.Value := "🏁   Loop Complete   —   " RaceCount
+            PointsCount_UI.Value := "💡   Est. Skill Points Gained  —   " PointsCount
+        }
+
+        Process("Returning to Free Roam...")
+        PressKey("Esc", 1000)
+        PressKey("Right")
+        PressKey("Enter")
+        PressKey("Enter", 20000)
+
+        if (ActiveMode != "Race" || (!MasterMode && MasterStart))
+            break
+
+        Process("Navigating Menu...")
+        PressKey("Esc", 1600)
+        PressKey("PgDn")
+        PressKey("PgDn")
+        PressKey("Enter")
+        PressKey("Enter", 20000)
+
+        RaceRunTime_UI.SetFont("c" cIdle)
+        PointsCount_UI.SetFont("c" cIdle)
+
         break
-
-	Process("Navigating Menu...")
-	PressKey("Esc", 1400)
-	PressKey("PgDn")
-	PressKey("PgDn")
-	PressKey("Enter")
-	PressKey("Enter", 20000)
-
-	RaceRunTime_UI.SetFont("c" cIdle)
-	PointsCount_UI.SetFont("c" cIdle)
-
-	break
     }
 
     ResetIndicators()
@@ -600,121 +602,143 @@ RaceLoop() {
 BuyLoop() {
     global ActiveMode, MasterMode, MasterStart, CarCount_In, SelectedCar
     global Key_UI, Process_UI, cActive, cHighlight, cIdle
-    global CarCount, CarCount_UI, BuyRunTime_UI, TotalRunTime
+    global CarCount, CarCount_UI, BuyRunTime_UI, TotalRunTime_UI
 
     While (ActiveMode = "Buy") {
 
-    Process_UI.SetFont("c" cHighlight)
-	Key_UI.SetFont("c" cHighlight)
-	CarCount_UI.SetFont("c" cHighlight)
-	TotalRunTime_UI.SetFont("c" cHighlight)
-	BuyRunTime_UI.SetFont("c" cHighlight)
+        Process_UI.SetFont("c" cHighlight)
+        Key_UI.SetFont("c" cHighlight)
+        CarCount_UI.SetFont("c" cHighlight)
+        TotalRunTime_UI.SetFont("c" cHighlight)
+        BuyRunTime_UI.SetFont("c" cHighlight)
 
-    SetTimer(TotalTimerTick, 1000)
-    SetTimer(BuyTimerTick, 1000)
+        SetTimer(TotalTimerTick, 1000)
+        SetTimer(BuyTimerTick, 1000)
 
- 	Process("Navigating Journal...")
-	PressKey("Down")
-	PressKey("Enter", 650)
-	PressKey("Right")
-	PressKey("Enter")
-	PressKey("Down")
-	PressKey("Enter")
-	PressKey("Backspace")
+        Process("Navigating Journal...")
+        PressKey("Down")
+        PressKey("Enter", 650)
+        PressKey("Right")
+        PressKey("Enter")
+        PressKey("Down")
+        PressKey("Enter")
+        PressKey("Backspace")
 
-	if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
+        if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
+            break
+
+        if (SelectedCar = "Subaru Impreza 22B") {
+            Loop 3
+            {
+                PressKey("Up", 50)
+            }
+            Loop 3
+            {
+                PressKey("Right", 50)
+            }
+            PressKey("Enter")
+            PressKey("Down")
+        }
+        else if (SelectedCar = "Lamborghini Revuelto") {
+            Loop 10
+            {
+                PressKey("Down", 50)
+            }
+            PressKey("Enter")
+            PressKey("Right")
+            Loop 4
+            {
+                PressKey("Down", 50)
+            }
+        }
+        else if (SelectedCar = "Dodge Viper GTS ACR") {
+            Loop 5
+            {
+                PressKey("Down", 50)
+            }
+            Loop 2
+            {
+                PressKey("Right", 50)
+            }
+            PressKey("Enter")
+            PressKey("Down")
+        }
+
+        if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
+            break
+
+        ; ── Buying Car ───────────────
+
+        Process_UI.Value := "⚙️ Process     —   Buying " SelectedCar "..."
+        While (CarCount < CarCount_In.Value) 
+        {
+            PressKey("Space")
+            PressKey("Down")
+            PressKey("Enter")
+            PressKey("Enter")
+            PressKey("Enter")
+            
+            CarCount++
+            CarCount_UI.Value := "🚗   Car Purchased   —   " CarCount
+        }
+
+        if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
+            break
+
+        ; ── Return to Home ───────────────
+        
+        Process("Returning to Home...")
+        if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
+            break
+
+        Loop 3
+        {
+            PressKey("Esc")
+        }
+        PressKey("Up")
+        PressKey("Up")
+
         break
-
-	if (SelectedCar = "Subaru Impreza 22B") {
-	    Loop 3
-	    {
-			PressKey("Up", 50)
-	    }
-	    Loop 3
-	    {
-			PressKey("Right", 50)
-	    }
-	    PressKey("Enter")
-	    PressKey("Down")
-	}
-	else if (SelectedCar = "Lamborghini Revuelto") {
-	    Loop 10
-	    {
-			PressKey("Down", 50)
-	    }
-	    PressKey("Enter")
-	    PressKey("Right")
-	    Loop 4
-	    {
-			PressKey("Down", 50)
-	    }
-	}
-
-	if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
-        break
-
-	; ── Buying Car ───────────────
-
-	Process_UI.Value := "⚙️ Process     —   Buying " SelectedCar "..."
-	While (CarCount < CarCount_In.Value) 
-	{
-	    PressKey("Space")
-	    PressKey("Down")
-	    PressKey("Enter")
-	    PressKey("Enter")
-	    PressKey("Enter")
-	    
-	    CarCount++
-	    CarCount_UI.Value := "🚗   Car Purchased   —   " CarCount
-	}
-
-	if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
-        break
-
-	; ── Return to Home ───────────────
-	
-	Process("Returning to Home...")
-	if (ActiveMode != "Buy" || (!MasterMode && MasterStart))
-        break
-
-	Loop 3
-	{
-    	PressKey("Esc")
-	}
-	PressKey("Up")
-	PressKey("Up")
-
-	break
     }
 
     ResetIndicators()
 }
 
 ; ══════════════════════════════════════════════
-;  CLAIM LOOP
+;  UNLOCK LOOP
 ; ══════════════════════════════════════════════
-ClaimLoop() {
+UnlockLoop() {
     global ActiveMode, MasterMode, CarCount_In
     global Key_UI, Process_UI, cActive, cHighlight, cIdle
-    global SWheelCount, SWheelCount_UI, WheelCount, WheelCount_UI, ClaimRunTime_UI, TotalRunTime, ClaimCount, SelectedCar
+    global SWheelCount, SWheelCount_UI, WheelCount, WheelCount_UI, CreditCount, CreditCount_UI, UnlockRunTime_UI, TotalRunTime_UI, UnlockCount, SelectedCar
 
-	    While (ActiveMode = "Claim") {
+	While (ActiveMode = "Unlock") {
 	
 	    Key_UI.SetFont("c" cHighlight)
 	    Process_UI.SetFont("c" cHighlight)
-		SWheelCount_UI.SetFont("c" cHighlight)
-		WheelCount_UI.SetFont("c" cHighlight)
-		TotalRunTime_UI.SetFont("c" cHighlight)
-		ClaimRunTime_UI.SetFont("c" cHighlight)
+        TotalRunTime_UI.SetFont("c" cHighlight)
+        
+        UnlockRunTime_UI.SetFont("c" cHighlight)
+
+        if (SelectedCar = "Subaru Impreza 22B") {
+            SWheelCount_UI.SetFont("c" cHighlight)
+        }
+        else if (SelectedCar = "Lamborghini Revuelto") {
+            SWheelCount_UI.SetFont("c" cHighlight)
+            WheelCount_UI.SetFont("c" cHighlight)
+        }
+        else if (SelectedCar = "Dodge Viper GTS ACR") {
+            CreditCount_UI.SetFont("c" cHighlight)
+        }
 	
 	    SetTimer(TotalTimerTick, 1000)
-	    SetTimer(ClaimTimerTick, 1000)
+	    SetTimer(UnlockTimerTick, 1000)
 		
 	 	Process("Navigating Home...")
 		PressKey("PgDn")
 		PressKey("Down", 50)
 	
-		if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		    break
 	
 	  	Process("Navigating Auction House...")
@@ -722,7 +746,7 @@ ClaimLoop() {
 		PressKey("Down")
 		PressKey("Enter", 650)
 	
-		if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		    break
 	
 	 	Process("Sort by Recently Added...")
@@ -735,24 +759,24 @@ ClaimLoop() {
 		PressKey("Backspace")
 		PressKey("Enter")
 	
-		if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		    break
 	
 	 	Process("Choosing First Car...")
 		PressKey("Enter")
 		PressKey("Down")
 		PressKey("Enter", 5000)
-		PressKey("Esc", 1500)
-		PressKey("Esc", 1500)
+		PressKey("Esc", 1600)
+		PressKey("Esc", 1600)
 	
-		if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		    break
 	
 		Loop CarCount_In.Value
 		{
 		
 	 	    Process("Navigating Upgrade...")
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart)) 
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart)) 
 				break
 	
 		    PressKey("PgDn")
@@ -764,10 +788,10 @@ ClaimLoop() {
 		    }
 		    PressKey("Enter", 1000)
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		        break
 	
-	 	    Process("Claiming Wheelspins...")
+	 	    Process("Unlocking Wheelspins...")
 	
 		    if (SelectedCar = "Subaru Impreza 22B") {
 		        PressKey("Enter", 1100)
@@ -781,8 +805,8 @@ ClaimLoop() {
 		        PressKey("Left", 250)
 		        PressKey("Enter", 1100)
 	
-				ClaimCount++
-				SWheelCount_UI.Value	:= "🛞   Super Wheelspin   —   " ClaimCount
+				UnlockCount++
+				SWheelCount_UI.Value	:= "🛞   Super Wheelspin   —   " UnlockCount
 		    }
 		    else if (SelectedCar = "Lamborghini Revuelto") {
 		        PressKey("Enter", 1100)
@@ -797,21 +821,36 @@ ClaimLoop() {
 		            PressKey("Enter", 1100)
 		        }
 	
-				ClaimCount++
-				SWheelCount_UI.Value	:= "🛞   Super Wheelspin   —   " ClaimCount
-				WheelCount_UI.Value	:= "🛞   Wheelspin   —   " ClaimCount*3
+				UnlockCount++
+				SWheelCount_UI.Value	:= "🛞   Super Wheelspin   —   " UnlockCount
+				WheelCount_UI.Value	:= "🛞   Wheelspin   —   " UnlockCount*3
+		    }
+            else if (SelectedCar = "Dodge Viper GTS ACR") {
+		        PressKey("Enter", 1100)
+                PressKey("Right", 250)
+		        Loop 3 
+		        {   
+                    PressKey("Enter", 1100)
+			        PressKey("Up", 250)
+		        }
+		        PressKey("Enter", 1100)
+                PressKey("Right", 250)
+                PressKey("Enter", 1100)
+	
+				UnlockCount++
+                CreditCount_UI.Value	:= "💲   Credits   —   " Format("{:L}", UnlockCount*85400 " CR")
 		    }
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		        break
 	
 	 	    Process("Navigating Home...")
-		    PressKey("Esc", 1500)
-		    PressKey("Esc", 1500)
+		    PressKey("Esc", 1600)
+		    PressKey("Esc", 1600)
 		    PressKey("PgUp", 50)
 		    PressKey("Down", 1400)
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		        break
 	
 	  	    Process("Navigating Auction House...")
@@ -819,7 +858,7 @@ ClaimLoop() {
 		    PressKey("Down")
 		    PressKey("Enter", 700)
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 		        break
 	
 	 	    Process("Sort by Recently Added...")
@@ -830,7 +869,7 @@ ClaimLoop() {
 		    }
 		    PressKey("Enter")
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 				break
 	
 	 	    Process("Choosing Next Car...")
@@ -839,7 +878,7 @@ ClaimLoop() {
 		    PressKey("Down")
 		    PressKey("Enter", 5000)
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 				break
 	
 	 	    Process("Removing Car From Garage...")
@@ -853,14 +892,14 @@ ClaimLoop() {
 		    PressKey("Down")
 		    PressKey("Enter", 1000)
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 				break
 	
 	 	    Process("Returning to Home...")
-		    PressKey("Esc", 1500)
-		    PressKey("Esc", 1500)
+		    PressKey("Esc", 1600)
+		    PressKey("Esc", 1600)
 	
-		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
+		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 				break
 		}
 		break
@@ -889,10 +928,10 @@ SmartCountdown(TotalSec, UIEl, ActiveText) {
 ; ══════════════════════════════════════════════
 ResetIndicators() {
     global Key_UI, Process_UI, StatusText, cIdle, cTextDim
-    global RaceCount_UI, TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, ClaimRunTime_UI, RaceCount, ActiveMode, MasterMode
+    global RaceCount_UI, TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, UnlockRunTime_UI, RaceCount, ActiveMode, MasterMode
     SetTimer(RaceTimerTick, 0)
     SetTimer(BuyTimerTick, 0)
-    SetTimer(ClaimTimerTick, 0)
+    SetTimer(UnlockTimerTick, 0)
 
     if (!MasterMode) {
         SetTimer(TotalTimerTick, 0)
@@ -907,12 +946,13 @@ ResetIndicators() {
         TotalRunTime_UI.SetFont("c" cIdle)
 		RaceRunTime_UI.SetFont("c" cIdle)
 		BuyRunTime_UI.SetFont("c" cIdle)
-		ClaimRunTime_UI.SetFont("c" cIdle)
+		UnlockRunTime_UI.SetFont("c" cIdle)
         ;RaceCount_UI.SetFont("c" cIdle)
 		PointsCount_UI.SetFont("c" cIdle)
 		CarCount_UI.SetFont("c" cIdle)
 		SWheelCount_UI.SetFont("c" cIdle)
 		WheelCount_UI.SetFont("c" cIdle)
+        CreditCount_UI.SetFont("c" cIdle)
         StatusText.Value := "⬤  Stopped"
         StatusText.SetFont("c" cTextDim)
     }
@@ -926,7 +966,7 @@ UpdateCar(ctrl,*) {
     global SelectedCar, SelectedCarPoint, PointsTotal
     
     SelectedCar := ctrl.Text
-    SelectedCarPoint := CarSelect_UI.Text = "Subaru Impreza 22B" ? 30 : 39
+    SelectedCarPoint := CarSelect_UI.Text = "Lamborghini Revuelto" ? 39 : 30
 
     CarPurchaseCount := Floor(PointsTotal / SelectedCarPoint)
         
@@ -951,7 +991,7 @@ UpdateSkillPts(ctrl, *) {
     PointsTotal := PointsGained + value
     	
     CarCount_In.Value := Floor(PointsTotal / SelectedCarPoint)
-	TimeTotal := CalcTimeRace(SkillPtsWant_In.Value)  + CalcTimeBuy(CarCount_In.Value) + CalcTimeClaim(CarCount_In.Value)
+	TimeTotal := CalcTimeRace(SkillPtsWant_In.Value)  + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
 
     PointsLabel_UI.Value := "Est. Skill Points Gained  —  " PointsGained
     TimeLabel_UI.Value :=  "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal) , Round((TimeTotal - Floor(TimeTotal)) * 60))
@@ -976,7 +1016,7 @@ UpdateSkillPtsWant(ctrl, *) {
     PointsTotal := PointsGained + SkillPtsCount_In.Value
 	
     CarCount_In.Value := Floor(PointsTotal / SelectedCarPoint)
-	TimeTotal := CalcTimeRace(value) + CalcTimeBuy(CarCount_In.Value) + CalcTimeClaim(CarCount_In.Value)
+	TimeTotal := CalcTimeRace(value) + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
     
     PointsLabel_UI.Value := "Est. Skill Points Gained  —  " PointsGained
     TimeLabel_UI.Value :=  "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal) , Round((TimeTotal - Floor(TimeTotal)) * 60))
@@ -1040,7 +1080,7 @@ CalcTimeBuy(car) {
     return totalTime / 60
 }
 
-CalcTimeClaim(car) {
+CalcTimeUnlock(car) {
     totalTime := car * 31
     return totalTime / 60
 }
@@ -1060,9 +1100,9 @@ EstimateScore(time) {
 
     pointsPerSection := MaxPoints / 96
 
-    fullRows := Floor(time / 126.5)
+    fullRows := Floor(time / 128)
 
-    remaining := Mod(time, 126.5)
+    remaining := Mod(time, 128)
 
     sections := fullRows * 4
     sections += Min(4, Floor(remaining / 30))
@@ -1100,13 +1140,25 @@ BuyTimerTick() {
     BuyRunTime_UI.Value := "⏱   Buy Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
 }
 
-ClaimTimerTick() {
-    global ClaimRunSeconds, ClaimRunTime_UI, cHighlight
-    ClaimRunSeconds++
-    mins := ClaimRunSeconds // 60
-    secs := Mod(ClaimRunSeconds, 60)
+UnlockTimerTick() {
+    global UnlockRunSeconds, UnlockRunTime_UI, cHighlight
+    UnlockRunSeconds++
+    mins := UnlockRunSeconds // 60
+    secs := Mod(UnlockRunSeconds, 60)
 
-    ClaimRunTime_UI.Value := "⏱   Claim Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
+    UnlockRunTime_UI.Value := "⏱   Unlock Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
+}
+
+; ══════════════════════════════════════════════
+;  MISC FUNCTIONS
+; ══════════════════════════════════════════════
+
+WriteNumber(num) {
+    for digit in StrSplit(String(num))
+    {
+        Send("{" digit "}")
+        Sleep(50) ; optional delay between key presses
+    }
 }
 
 ; ══════════════════════════════════════════════
