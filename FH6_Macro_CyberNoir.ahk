@@ -37,7 +37,8 @@ global TotalRunSeconds	:= 0
 global RaceRunSeconds	:= 0
 global BuyRunSeconds	:= 0
 global ClaimRunSeconds	:= 0
-global LoadingTime	:= 40
+global RaceLoadingTime	:= 52
+global FinLoadingTime	:= 40
 
 global RaceCount_UI	:= ""
 global PointsCount_UI	:= ""
@@ -301,8 +302,8 @@ ToggleTheme() {
 ;  HOTKEYS
 ; ══════════════════════════════════════════════
 \::StartRace()
-]::StartBuy()
-[::StartClaim()
+[::StartBuy()
+]::StartClaim()
 /::ToggleAll()
 F12::Reload()
 
@@ -436,7 +437,7 @@ StartClaim() {
 ;  KEY AND PROCESS
 ; ══════════════════════════════════════════════
 
-PressKey(key, delay := 400) {
+PressKey(key, delay := 500) {
     global Key_UI, cHighlight, cIdle
 
     switch key {
@@ -468,10 +469,8 @@ RaceLoop() {
     global ActiveMode, MasterMode, MasterStart, SkillPtsCount_In, SkillPtsWant_In, CarCount_In
     global Key_UI, Process_UI, cActive, cHighlight, cIdle
     global RaceCount, RaceCount_UI, PointsCount_UI, CarCount_UI, RaceRunTime_UI, TotalRunTime
-    global LoadingTime, AveragePoints, Maxpoints, PointsTotal, PointsGained, PointsCount, RaceRunSeconds
+    global RaceLoadingTime, FinLoadingTime, AveragePoints, Maxpoints, PointsTotal, PointsGained, PointsCount, RaceRunSeconds
 
-    LoadingTime		:= 41
-    CountdownTime	:= 3
     DriveTime		:= 30
 
     While (ActiveMode = "Race") {
@@ -485,20 +484,20 @@ RaceLoop() {
 	SetTimer(RaceTimerTick, 1000)
 	
 	Process("Returning to Free Roam...")
-	PressKey("Esc", 7000)
+	PressKey("Esc", 10000)
 
 	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
 		break
 		
 	Process("Navigating Menu...")
-	PressKey("Esc", 500)
+	PressKey("Esc", 1000)
 	PressKey("PgDn", 100)
 	PressKey("PgDn", 100)
 	PressKey("PgDn", 100)
 	PressKey("PgDn")
 
 	Process("Opening EventLab Menu...")
-	PressKey("Enter", 500)
+	PressKey("Enter", 1000)
 	PressKey("Enter", 1500)
 	PressKey("Backspace")
 	PressKey("Up")
@@ -526,8 +525,8 @@ RaceLoop() {
         break
 
 	Process("Entering EventLab...")
-	PressKey("Enter", 500)
-	PressKey("Enter", 1500)
+	PressKey("Enter")
+	PressKey("Enter", 2000)
 	PressKey("Y")
 	PressKey("Enter")
 	PressKey("Esc")
@@ -536,7 +535,7 @@ RaceLoop() {
 		break
 
 	Process("Loading EventLab...")
-	PressKey("Enter", 15000)
+	PressKey("Enter", 20000)
 
 	Process("Start Race Event...")
 	PressKey("Enter", 2500)
@@ -564,26 +563,27 @@ RaceLoop() {
 	    
         ; ── Increment race counter ───────────
         RaceCount++
-	    PointsCount := EstimateScore(RaceRunSeconds - LoadingTime)
+	    PointsCount := EstimateScore(RaceRunSeconds - RaceLoadingTime)
 
         ;RaceCount_UI.Value := "🏁   Loop Complete   —   " RaceCount
 	    PointsCount_UI.Value := "💡   Est. Skill Points Gained  —   " PointsCount
 	}
 
 	Process("Returning to Free Roam...")
-	PressKey("Esc", 500)
+	PressKey("Esc", 1000)
 	PressKey("Right")
 	PressKey("Enter")
-	PressKey("Enter", 15000)
+	PressKey("Enter", 20000)
 
 	if (ActiveMode != "Race" || (!MasterMode && MasterStart))
         break
 
 	Process("Navigating Menu...")
-	PressKey("Esc", 500)
+	PressKey("Esc", 1400)
 	PressKey("PgDn")
 	PressKey("PgDn")
 	PressKey("Enter")
+	PressKey("Enter", 20000)
 
 	RaceRunTime_UI.SetFont("c" cIdle)
 	PointsCount_UI.SetFont("c" cIdle)
@@ -614,9 +614,6 @@ BuyLoop() {
     SetTimer(BuyTimerTick, 1000)
 
  	Process("Navigating Journal...")
-	PressKey("Enter", 10000)
-
- 	Process("Loading Home...")
 	PressKey("Down")
 	PressKey("Enter", 650)
 	PressKey("Right")
@@ -682,7 +679,7 @@ BuyLoop() {
 
 	Loop 3
 	{
-    	PressKey("Esc", 500)
+    	PressKey("Esc")
 	}
 	PressKey("Up")
 	PressKey("Up")
@@ -723,7 +720,7 @@ ClaimLoop() {
 	  	Process("Navigating Auction House...")
 		PressKey("Enter", 550)
 		PressKey("Down")
-		PressKey("Enter", 550)
+		PressKey("Enter", 650)
 	
 		if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
 		    break
@@ -744,9 +741,9 @@ ClaimLoop() {
 	 	Process("Choosing First Car...")
 		PressKey("Enter")
 		PressKey("Down")
-		PressKey("Enter", 3000)
-		PressKey("Esc", 700)
-		PressKey("Esc", 1400)
+		PressKey("Enter", 5000)
+		PressKey("Esc", 1500)
+		PressKey("Esc", 1500)
 	
 		if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
 		    break
@@ -809,8 +806,8 @@ ClaimLoop() {
 		        break
 	
 	 	    Process("Navigating Home...")
-		    PressKey("Esc", 700)
-		    PressKey("Esc", 1400)
+		    PressKey("Esc", 1500)
+		    PressKey("Esc", 1500)
 		    PressKey("PgUp", 50)
 		    PressKey("Down", 1400)
 	
@@ -840,7 +837,7 @@ ClaimLoop() {
 		    PressKey("Down")
 		    PressKey("Enter")
 		    PressKey("Down")
-		    PressKey("Enter", 3000)
+		    PressKey("Enter", 4000)
 	
 		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
 				break
@@ -848,22 +845,20 @@ ClaimLoop() {
 	 	    Process("Removing Car From Garage...")
 		    PressKey("Up")
 		    PressKey("Enter")
-		    PressKey("Down")
-		    PressKey("Down")
 		    Loop 5 
 		    {
 		        PressKey("Down", 50)
 		    }
 		    PressKey("Enter")
 		    PressKey("Down")
-		    PressKey("Enter", 500)
+		    PressKey("Enter", 1000)
 	
 		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
 				break
 	
 	 	    Process("Returning to Home...")
-		    PressKey("Esc", 1400)
-		    PressKey("Esc", 1400)
+		    PressKey("Esc", 1500)
+		    PressKey("Esc", 1500)
 	
 		    if (ActiveMode != "Claim" || (!MasterMode && MasterStart))
 				break
@@ -1025,7 +1020,7 @@ GetMinScore(score) {
 }
 
 CalcTimeRace(score) {
-    global LoadingTime
+    global RaceLoadingTime, FinLoadingTime
 
     pointsPerSection := MaxPoints / 96
     secPerSection := 30
@@ -1035,18 +1030,18 @@ CalcTimeRace(score) {
     sections := Ceil(score / pointsPerSection)
     rows := Ceil(sections / sectionsPerRow)
 
-    totalTime := LoadingTime + (sections * secPerSection) + (rows * secPerRow)
+    totalTime := RaceLoadingTime + (sections * secPerSection) + (rows * secPerRow) + FinLoadingTime
 
     return totalTime / 60
 }
 
 CalcTimeBuy(car) {
-	totalTime := car * 2.6
+	totalTime := car * 2.7
     return totalTime / 60
 }
 
 CalcTimeClaim(car) {
-    totalTime := car * 27.8
+    totalTime := car * 31
     return totalTime / 60
 }
 
