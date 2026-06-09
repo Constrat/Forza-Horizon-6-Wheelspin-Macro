@@ -838,7 +838,7 @@ UnlockLoop() {
                 PressKey("Enter", 1100)
 	
 				UnlockCount++
-                CreditCount_UI.Value	:= "💲   Credits   —   " Format("{:L}", UnlockCount*85400 " CR")
+                CreditCount_UI.Value	:= "💲   Credits   —   " UnlockCount*85400 " CR"
 		    }
 	
 		    if (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
