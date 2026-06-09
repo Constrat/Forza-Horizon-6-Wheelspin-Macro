@@ -3,7 +3,7 @@
 
 ; ╔═════════════════════════════════════════╗
 ; ║        FH6 Wheelspin Macro				║
-; ║        Cyber Noir Edition v1.1          ║
+; ║        Cyber Noir Edition v1.0.1        ║
 ; ╚═════════════════════════════════════════╝
 
 global ActiveMode	:= ""
