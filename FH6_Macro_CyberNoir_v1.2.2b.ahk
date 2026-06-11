@@ -4,7 +4,7 @@
 
 ; ╔═════════════════════════════════════════╗
 ; ║        FH6 Wheelspin Macro				║
-; ║        Cyber Noir Edition v1.2.2        ║
+; ║        Cyber Noir Edition v1.2.2b       ║
 ; ╚═════════════════════════════════════════╝
 
 global ActiveMode	:= ""
@@ -177,7 +177,7 @@ BuildGui(savedVals := "") {
    
     MyGui.SetFont("s9 norm cE6F1FF", "Segoe UI")
     ;PixelCheck_UI := MyGui.Add("Checkbox", , "  Dynamic Loading  ⏳")
-    PremiumCheck_UI := MyGui.Add("Checkbox", "y+8 0x200", "  PREMIUM   👑")
+    PremiumCheck_UI := MyGui.Add("Checkbox", "y+8 0x200", "  PREMIUM    🜲")
 
     ; ── Calculations & Targets ────────────────
     MyGui.SetFont("s9 bold", "Segoe UI")
@@ -206,9 +206,9 @@ BuildGui(savedVals := "") {
     MyGui.Add("Text", "x14 y+0  w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     MyGui.SetFont("s9 norm", "Segoe UI Light")
-    Key_UI          := MyGui.Add("Text", "x0 y+5 w270 Center BackgroundTrans c" p["cIdle"], "➡️  [  ]")
+    Key_UI          := MyGui.Add("Text", "x0 y+5 w270 Center BackgroundTrans c" p["cIdle"], "⌨  [   ]")
     Process_UI      := MyGui.Add("Text", "x0 y+2 w270 Center BackgroundTrans c" p["cIdle"], "⚙️  Waiting...")
-    TotalRunTime_UI := MyGui.Add("Text", "x0 y+2 w270 Center BackgroundTrans c" p["cIdle"], "⏱ Total Time Running   —   00:00")
+    TotalRunTime_UI := MyGui.Add("Text", "x0 y+2 w270 Center BackgroundTrans c" p["cIdle"], "🕓  00:00")
 
     ; ── Progress Panel ────────────────────────
     MyGui.SetFont("s9 bold", "Segoe UI")
@@ -216,11 +216,11 @@ BuildGui(savedVals := "") {
     MyGui.Add("Text", "x0 y+0  w270 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     MyGui.SetFont("s9 norm", "Segoe UI Light")
-    RaceRunTime_UI   := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "⏱   Race Time Running   —   00:00")
+    RaceRunTime_UI   := MyGui.Add("Text", "x0 y+5 w270 Center BackgroundTrans c" p["cIdle"], "🕓   Race Time Running   —   00:00")
     PointsCount_UI   := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "💡   Est. Skill Points Gained  —   0")
-    BuyRunTime_UI    := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "⏱   Buy Time Running   —   00:00")
+    BuyRunTime_UI    := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "🕓   Buy Time Running   —   00:00")
     CarCount_UI      := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🚗   Car Purchased   —   0")
-    UnlockRunTime_UI := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "⏱   Unlock Time Running   —   00:00")
+    UnlockRunTime_UI := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "🕓   Unlock Time Running   —   00:00")
     SWheelCount_UI   := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🛞   Super Wheelspin   —   0")
     WheelCount_UI    := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🛞   Wheelspin   —   0")
     CreditCount_UI   := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "💲   Credits   —   0 CR")
@@ -421,7 +421,7 @@ StartRace() {
         PointsCount		    := 0
         ;RaceCount_UI.Value	:= "🏁   Loop Completed   —   0"
         PointsCount_UI.Value	:= "💡   Est. Skill Points Gained   —   0"
-        RaceRunTime_UI.Value	:= "⏱   Race Time Running   —   00:00"
+        RaceRunTime_UI.Value	:= "🕓   Race Time Running   —   00:00"
         RaceLoop()
     }
 
@@ -444,7 +444,7 @@ StartBuy() {
 		CarCount			:= 0
         BuyRunSeconds		:= 0
 		CarCount_UI.Value	:= "🚗   Car Purchased   —   0"
-        BuyRunTime_UI.Value	:= "⏱   Buy Time Running   —   00:00"
+        BuyRunTime_UI.Value	:= "🕓   Buy Time Running   —   00:00"
         StatusText.Value 	:= "⬤  Running..."
         StatusText.SetFont("c" cActive)
         BuyLoop()
@@ -471,7 +471,7 @@ StartUnlock() {
 		SWheelCount_UI.Value	:= "🛞   Super Wheelspin   —   0"
 		WheelCount_UI.Value	    := "🛞   Wheelspin   —   0"
 		CreditCount_UI.Value	:= "💲   Credits   —   0 CR"
-        UnlockRunTime_UI.Value	:= "⏱   Unlock Time Running   —   00:00"
+        UnlockRunTime_UI.Value	:= "🕓   Unlock Time Running   —   00:00"
         StatusText.Value 	    := "⬤  Running..."
         StatusText.SetFont("c" cActive)
         UnlockLoop()
@@ -531,7 +531,7 @@ RaceLoop() {
         PressKey("Down") ; Navigate to Confirm
         PressKey("Enter") ; Select Confirm
 
-        if !WaitForMenuRelative("Waiting for EventLab to load...", 0.427, 0.594, "0x000000", , 10000, , true) {
+        if !WaitForMenuRelative("Waiting for EventLab to load...", 0.427, 0.594, "0x000000", , 8000) {
             Process("Sync Error: EventLab search timed out!")
             break
         }
@@ -572,7 +572,7 @@ RaceLoop() {
             Process("Throttling...")
 
             PressKey("w down", 50) ; Press throttle to move forward
-            Sleep(30000) ; 
+            Sleep(30000)
             PressKey("w up", 50) ; Release throttle to prevent timeout
 
             if CheckAbort()
@@ -785,7 +785,7 @@ UnlockLoop() {
     
             PressKey("PgDn") ; Navigate to Cars Menu
             PressKey("Down", 50) ; Navigate to Upgrades & Tuning
-            PressKey("Enter", 700) ; Select Upgrades & Tuning
+            PressKey("Enter", 800) ; Select Upgrades & Tuning
             Loop 7 
                 PressKey("Down", 50) ; Navigate to Car Mastery
             PressKey("Enter") ; Select Car Mastery
@@ -957,7 +957,7 @@ ResetIndicators() {
         SetTimer(TotalTimerTick, 0)
     }
     ActiveMode := ""
-    Key_UI.Value := "➡️  [  ]"
+    Key_UI.Value := "⌨  [   ]"
     Key_UI.SetFont("c" cIdle)
     Process_UI.Value := "⚙️  Waiting..."
     
@@ -1143,7 +1143,7 @@ TotalTimerTick() {
     mins := TotalRunSeconds // 60
     secs := Mod(TotalRunSeconds, 60)
 
-    TotalRunTime_UI.Value := "⏱ Total Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
+    TotalRunTime_UI.Value := "🕓  " Format("{:02d}:{:02d}", mins, secs)
 }
 
 RaceTimerTick() {
@@ -1152,7 +1152,7 @@ RaceTimerTick() {
     mins := RaceRunSeconds // 60
     secs := Mod(RaceRunSeconds, 60)
 
-    RaceRunTime_UI.Value := "⏱   Race Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
+    RaceRunTime_UI.Value := "🕓   Race Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
 }
 
 BuyTimerTick() {
@@ -1161,7 +1161,7 @@ BuyTimerTick() {
     mins := BuyRunSeconds // 60
     secs := Mod(BuyRunSeconds, 60)
 
-    BuyRunTime_UI.Value := "⏱   Buy Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
+    BuyRunTime_UI.Value := "🕓   Buy Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
 }
 
 UnlockTimerTick() {
@@ -1170,7 +1170,7 @@ UnlockTimerTick() {
     mins := UnlockRunSeconds // 60
     secs := Mod(UnlockRunSeconds, 60)
 
-    UnlockRunTime_UI.Value := "⏱   Unlock Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
+    UnlockRunTime_UI.Value := "🕓   Unlock Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
 }
 ; ══════════════════════════════════════════════
 ;  PIXEL DETECTION
@@ -1256,11 +1256,13 @@ PressKey(key, delay := 500) {
         case "Up":    displayname := "↑"
         case "Left":  displayname := "←"
         case "Right": displayname := "→"
+        case "Enter": displayname := "Enter ↵" 
+        case "Backspace": displayname := "⬅ Backspace"
         case "w down", "w up": displayname := "W"
         Default : displayname := key
     }
 
-    Key_UI.Value := "➡️  [ " displayName " ]"
+    Key_UI.Value := "⌨  [ " displayName " ]"
 
     ; 2. Handle Space Modifiers (e.g., splitting "w" and "down")
     cleanKey := key
