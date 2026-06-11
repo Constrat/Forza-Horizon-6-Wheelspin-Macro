@@ -154,15 +154,6 @@ You can choose which vehicle the macro purchases and unlocks perks for via the G
 
 Before using the macro, ensure your game is properly configured. The automation relies on consistent menus, pixel checking, and layout positioning.
 
-### ⚠️ IMPORTANT: Keep Left Half of Screen Uncovered!
-> **CRITICAL RUNTIME WARNING:** Do **NOT** cover, overlay, or block the **left half of your monitor screen** while this macro is executing. 
-> 
-> The dynamic pixel engine samples hex color data across coordinates exclusively located on the left half of the display workspace. If background apps (e.g., Discord, browser windows, Spotify), streaming overlays, or Windows system notification banners obscure any section of the screen's left half, the `WaitForMenuRelative` scanner will read false values, resulting in an immediate **Sync Error / Menu Timeout**.
-
-<p align="center">
-  <img width="2563" height="1453" alt="Screenshot 2026-06-11 025901" src="https://github.com/user-attachments/assets/700ce2ab-6d03-474a-8dfb-fa6c46e263d9">
-</p>
-
 ### 🏁 Starting Position
 Make sure you are in the Home Menu, loaded fully into an active session (no loading screens), with active keyboard input before starting any session.  
 📌 All sessions use this identical baseline starting structure.
@@ -209,8 +200,6 @@ Verify your in-game configurations match the settings below for maximum consiste
 
 | Setting | Recommended Value |
 | --- | --- |
-| Display Mode | **FULLSCREEN ONLY** |
-| Resolution / Aspect Ratio | **16:9 ASPECT RATIO ONLY** |
 | Driving Controls Scheme | **WASD KEYBOARD LAYOUT ONLY** |
 | Drivatar Difficulty | UNBEATABLE |
 | Braking | ASSISTED |
@@ -224,14 +213,7 @@ Verify your in-game configurations match the settings below for maximum consiste
 ### 🚫 Disable Skills HUD
 Navigate to Settings → HUD & Gameplay → Skills HUD and set it to OFF.
 
-Disabling the Skills HUD prevents visual pop-ups during gameplay that cause delays in building up skill points. While the macro may function with it enabled, turning it off is highly recommended for fastest farming sessions.
-
-### 🗺️ HUD Safe Frame Calibration
-Navigate to **Settings → HUD & Gameplay** and adjust the UI boundaries to the following exact values:
-* **HUD Safe Frame Horizontal:** `5`
-* **HUD Safe Frame Vertical:** `9`
-
-> **CRITICAL ALIGNMENT WARNING:** Modifying the default HUD Safe Frame values alters the physical anchor placement of on-screen UI components. Because the macro's pixel detection loops scan exact coordinate arrays, changing these frame bounds will misalign the sensor engine, resulting in persistent color identification errors and menu synchronization timeouts.
+> Disabling the Skills HUD prevents visual pop-ups during gameplay that cause delays in building up skill points. While the macro may function with it enabled, turning it off is highly recommended for fastest farming sessions.
 
 ### 🛑 Disable "What's Next" Feature
 Navigate to **Settings → HUD & Gameplay → What's Next** and turn it **OFF**.
@@ -241,6 +223,33 @@ Navigate to **Settings → HUD & Gameplay → What's Next** and turn it **OFF**.
 <p align="center">
   <img width="2456" height="1068" alt="Skills HUD Off" src="https://github.com/user-attachments/assets/c92a4501-a0f7-4af7-bc0a-ebe25ece19df"> 
 </p>
+
+---
+
+## 🖥️ Recommended Screen Settings Setup
+For the pixel colour synchronization system to work at maximum speed and accuracy, your setup **must** meet these conditions:
+* **Display Mode:** Fullscreen Only
+* **Aspect Ratio:** 16:9 Only (1280×720, 1920×1080, 2560×1440, etc.)
+* **HUD Safe Frame:** Default Calibration
+* **Screen Clearance:** The **left half of your screen must be completely clear**. Turn off any Discord overlays, stream chat widgets, or floating windows, as they will block the script from reading the HUD pixels.
+ 
+> *Note: If these requirements are not met, the script will automatically switch to a slower, time-based fallback mode to prevent crashing, but your farming speed will drop noticably and some flows might not work correctly.*
+
+### ⚠️ Keep Left Half of Screen Uncovered!
+**CRITICAL RUNTIME WARNING:** Do **NOT** cover, overlay, or block the **left half of your monitor screen** while this macro is executing. 
+
+The dynamic pixel engine samples hex color data across coordinates exclusively located on the left half of the display workspace. If background apps (e.g., Discord, browser windows, Spotify), streaming overlays, or Windows system notification banners obscure any section of the screen's left half, the `WaitForMenuRelative` scanner will read false values, resulting in an immediate **Sync Error / Menu Timeout**.
+
+<p align="center">
+  <img width="2563" height="1453" alt="Screenshot 2026-06-11 025901" src="https://github.com/user-attachments/assets/700ce2ab-6d03-474a-8dfb-fa6c46e263d9">
+</p>
+
+### 🗺️ HUD Safe Frame Calibration
+Navigate to **Settings → HUD & Gameplay** and adjust the UI boundaries to the following exact values:
+* **HUD Safe Frame Horizontal:** `5`
+* **HUD Safe Frame Vertical:** `9`
+
+> **CRITICAL ALIGNMENT WARNING:** Modifying the default HUD Safe Frame values alters the physical anchor placement of on-screen UI components. Because the macro's pixel detection loops scan exact coordinate arrays, changing these frame bounds will misalign the sensor engine, resulting in persistent color identification errors and menu synchronization timeouts.
 
 ---
 

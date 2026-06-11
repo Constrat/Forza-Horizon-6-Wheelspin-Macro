@@ -1,12 +1,14 @@
 #Requires AutoHotkey v2.0
 #MaxThreadsPerHotkey 2
+#SingleInstance Force
 
 ; ╔═════════════════════════════════════════╗
 ; ║        FH6 Wheelspin Macro				║
-; ║        Cyber Noir Edition v1.2.0        ║
+; ║        Cyber Noir Edition v1.2.1        ║
 ; ╚═════════════════════════════════════════╝
 
 global ActiveMode	:= ""
+global PauseMode	:= false
 global MasterMode	:= ""
 global MasterStart	:= false
 
@@ -56,6 +58,8 @@ global CarSelect_UI	    := ""
 global CarsLabel_UI	    := ""
 global PointsLabel_UI	:= ""
 global TimeLabel_UI	    := ""
+global PixelCheck_UI    := ""
+global PremiumCheck_UI  := ""
 
 global SelectedCar      := "Subaru Impreza 22B"
 global SelectedCarPoint	:= 30
@@ -89,6 +93,7 @@ GetPalette() {
         p["divider"]  := "1F2A3A"
         p["cActive"]    := "00E5FF"
         p["cHighlight"] := "39FF14"
+        p["cPaused"]     := "FFD54F"
         p["cIdle"]      := "6B7C93"
         p["cTextDim"]   := "6B7C93"
         p["footer"]     := "1F2A3A"
@@ -108,6 +113,7 @@ GetPalette() {
         p["divider"]  := "C9D6E5"
         p["cActive"]    := "0066FF"
         p["cHighlight"] := "1DB954"
+        p["cPaused"]    := "C68400"
         p["cIdle"]      := "4B5B73"
         p["cTextDim"]   := "4B5B73"
         p["footer"]     := "C9D6E5"
@@ -123,9 +129,9 @@ BuildGui(savedVals := "") {
     global MyGui, StatusText, RaceCount_UI, PointsCount_UI, CarCount_UI, SWheelCount_UI, WheelCount_UI, CreditCount_UI
     global TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, UnlockRunTime_UI
     global PointsLabel_UI, TimeLabel_UI, CarsLabel_UI
-    global Key_UI, Process_UI, CodeTune_UI, CodeEventLab_UI, CarSelect_UI
+    global Key_UI, Process_UI, CodeTune_UI, CodeEventLab_UI, CarSelect_UI, PixelCheck_UI, PremiumCheck_UI
     global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, AveragePoints, MaxPoints, PointsTotal, PointsGained, TimeTotal
-    global ActiveMode, DarkMode, cActive, cHighlight, cIdle, cTextDim, RaceCount
+    global ActiveMode, DarkMode, cActive, cHighlight, cIdle, cTextDim, cPaused, cStat, RaceCount
 
     ; 1. Inline assignments to save vertical spacing
     p := GetPalette()
@@ -133,6 +139,7 @@ BuildGui(savedVals := "") {
     cHighlight := p["cHighlight"]
     cIdle      := p["cIdle"]
     cTextDim   := p["cTextDim"]
+    cPaused    := p["cPaused"]
     cStat      := ActiveMode ? p["accent"] : p["textDim"]
     sLabel     := ActiveMode ? "⬤   Running..." : "⬤   Stopped"
 
@@ -165,15 +172,25 @@ BuildGui(savedVals := "") {
     MyGui.Add("Text", "x30 y+6 w155 BackgroundTrans c" p["text"], "⟡   Car Purchase")
     CarCount_In := MyGui.Add("Edit", "x179 yp-3 w63 Center Number Background" p["editBg"] " c" p["text"], savedVals ? savedVals[3] : Floor(MaxPoints / SelectedCarPoint))
 
-    CarSelect_UI := MyGui.Add("DropDownList", "x55 y+10 w160 Choose1", ["Subaru Impreza 22B", "Lamborghini Revuelto", "Dodge Viper GTS ACR"])
-    CarSelect_UI.SetFont("s9 Bold", "Segoe UI")
+    MyGui.SetFont("s9 Bold", "Segoe UI")
+    CarSelect_UI := MyGui.Add("DropDownList", "x55 y+10 w160 Center Choose1", ["Subaru Impreza 22B", "Lamborghini Revuelto", "Dodge Viper GTS ACR"])
+   
+    MyGui.SetFont("s9 norm cE6F1FF", "Segoe UI")
+    ;PixelCheck_UI := MyGui.Add("Checkbox", , "  Dynamic Loading  ⏳")
+    PremiumCheck_UI := MyGui.Add("Checkbox", "y+8" , "  Premium   👑")
+    PremiumCheck_UI.Enabled := false ; Placeholder for future premium features
 
     ; ── Calculations & Targets ────────────────
+    MyGui.SetFont("s9 bold", "Segoe UI")
+    MyGui.Add("Text", "x14 y+14 w242 Center BackgroundTrans c" p["textDim"], "TARGET")
+    MyGui.Add("Text", "x14 y+0  w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
     PointsGained := GetMinScore(SkillPtsWant_In.Value)
     PointsTotal  := PointsGained + SkillPtsCount_In.Value
     TimeTotal    := CalcTimeRace(SkillPtsWant_In.Value) + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
 
-    PointsLabel_UI := MyGui.Add("Text", "x14 y+9 w242 Center BackgroundTrans c" p["cIdle"], "Est. Skill Points Gained  —  " PointsGained)
+    MyGui.SetFont("s9 norm", "Segoe UI Light")
+    PointsLabel_UI := MyGui.Add("Text", "x14 y+5 w242 Center BackgroundTrans c" p["cIdle"], "Est. Skill Points Gained  —  " PointsGained)
     TimeLabel_UI   := MyGui.Add("Text", "x14 y+2 w242 Center BackgroundTrans c" p["cIdle"], "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal), Round((TimeTotal - Floor(TimeTotal)) * 60)))
     CarsLabel_UI   := MyGui.Add("Text", "x14 y+2 w242 Center BackgroundTrans c" p["cIdle"], "Recommended Car Purchase  —  " Floor(PointsTotal / SelectedCarPoint))
 
@@ -185,8 +202,8 @@ BuildGui(savedVals := "") {
     SkillPtsWant_In.OnEvent("LoseFocus", ValidateSkillPtsWant)
 
     ; ── Session Panel ─────────────────────────
-    MyGui.SetFont("s7 bold", "Segoe UI")
-    MyGui.Add("Text", "x14 y+14 w242 Center BackgroundTrans c" p["textDim"], "SESSION")
+    MyGui.SetFont("s9 bold", "Segoe UI")
+    MyGui.Add("Text", "x14 y+10 w242 Center BackgroundTrans c" p["textDim"], "SESSION")
     MyGui.Add("Text", "x14 y+0  w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     MyGui.SetFont("s9 norm", "Segoe UI Light")
@@ -195,7 +212,7 @@ BuildGui(savedVals := "") {
     TotalRunTime_UI := MyGui.Add("Text", "x0 y+2 w270 Center BackgroundTrans c" p["cIdle"], "⏱   Total Time Running   —   00:00")
 
     ; ── Progress Panel ────────────────────────
-    MyGui.SetFont("s7 bold", "Segoe UI")
+    MyGui.SetFont("s9 bold", "Segoe UI")
     MyGui.Add("Text", "x0 y+13 w270 Center BackgroundTrans c" p["textDim"], "PROGRESS")
     MyGui.Add("Text", "x0 y+0  w270 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
@@ -210,7 +227,7 @@ BuildGui(savedVals := "") {
     CreditCount_UI   := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "💲   Credits   —   0 CR")
 
     ; ── Action Buttons ────────────────────────
-    MyGui.Add("Text", "x14 y+13 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    MyGui.Add("Text", "x14 y+10 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     MyGui.SetFont("s9 bold", "Segoe UI Semibold")
     RaceBtn := MyGui.Add("Text", "x14 y+6 w242 h36 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🏁   RACE   —   \")
@@ -247,9 +264,33 @@ BuildGui(savedVals := "") {
         SetTimer(() => ToolTip(), -2000)
     ))
 
+    ; ── GUI setting ──────────────────────────
     MyGui.Add("Text", "x0 y+5 w270 h1 BackgroundTrans c" p["footer"], "")
     MyGui.OnEvent("Close", (*) => ExitApp())
-    MyGui.Show(GuiWidth)
+    MyGui.Show("w270 NoActivate Hide")
+
+    ; ── Center the checkboxes ──────────────────────────    
+    ;PixelCheck_UI.GetPos(,, &PixWidth)
+    PremiumCheck_UI.GetPos(,, &PremWidth)
+    MyGui.GetClientPos(,, &guiWidth)
+
+    ;PixelCheck_UI.Move((guiWidth / 2) - (PixWidth / 2))
+    PremiumCheck_UI.Move((guiWidth / 2) - (PremWidth / 2))
+
+    ; ── Center the GUI on the half right screen ──────────────────────────
+    MyGui.GetPos(, , &w, &h)
+
+    screenW := A_ScreenWidth
+    screenH := A_ScreenHeight
+
+    rightHalfLeft := screenW // 2
+    rightHalfWidth := screenW // 2
+
+    x := rightHalfLeft + (rightHalfWidth - w) // 2
+    y := (screenH - h) // 2
+
+    MyGui.Move(x, y)
+    MyGui.Show("w270 NoActivate")
 }
 
 ; ══════════════════════════════════════════════
@@ -285,20 +326,27 @@ ToggleTheme() {
 ]::StartUnlock()
 /::ToggleAll()
 F12::Reload()
-`::Pause(-1)
+`::TogglePause()
 ^+c:: GetCoordsColor()
 
 ; ══════════════════════════════════════════════
 ;  TOGGLE ACTION
 ; ══════════════════════════════════════════════
 
-TogglePausese() {
-    global ActiveMode
+TogglePause() {
+    global ActiveMode, PauseMode, StatusText, cIdle, cPaused, cStat, MasterMode
 
-    if ActiveMode
-        ActiveMode := ""
-    else
-        ActiveMode := "Race"
+    Pause(-1)
+    PauseMode := !PauseMode
+
+    if (PauseMode && ActiveMode) {
+        StatusText.Value := "⬤  Paused..."
+        StatusText.SetFont("c" cPaused)
+    }
+    else if ActiveMode {
+        StatusText.Value := "⬤  Running..."
+        StatusText.SetFont("c" cStat)
+    }
 }
 
 ToggleMode(mode) {
@@ -459,7 +507,7 @@ Process(text) {
 RaceLoop() {
     global ActiveMode, MasterMode, MasterStart, SkillPtsCount_In, SkillPtsWant_In, CarCount_In
     global Key_UI, Process_UI, cActive, cHighlight, cIdle
-    global RaceCount, RaceCount_UI, PointsCount_UI, CarCount_UI, RaceRunTime_UI, TotalRunTime_UI
+    global RaceCount, RaceCount_UI, PointsCount_UI, CarCount_UI, RaceRunTime_UI, TotalRunTime_UI, PixelCheck_UI
     global RaceLoadingTime, FinLoadingTime, AveragePoints, Maxpoints, PointsTotal, PointsGained, PointsCount, RaceRunSeconds
 
     ; Local helper to cleanly check if the macro should stop
@@ -477,11 +525,11 @@ RaceLoop() {
   
         Process("Returning to Free Roam...")
         PressKey("Esc") ; Return to Free Roam
-        if !WaitForMenuRelative(0.071, 0.289, "0x0a0909", "0xFFFFFF", 20000) {
+        if !WaitForMenuRelative(0.071, 0.289, "0xFFFFFF", , 15000) {
             Process("Sync Error: Unable to return to Free Roam!")
             break
         }
-        Sleep(1000)
+
         if CheckAbort()
             break
             
@@ -509,7 +557,7 @@ RaceLoop() {
         PressKey("Enter") ; Select Confirm
 
         Process("Waiting for EventLab to load...")
-        if !WaitForMenuRelative(0.427, 0.594, "0x000000", "0x000000", 10000) {
+        if !WaitForMenuRelative(0.427, 0.594, "0x000000", , 15000) {
             Process("Sync Error: EventLab search timed out!")
             break
         }
@@ -530,7 +578,7 @@ RaceLoop() {
         PressKey("Enter") ; Select Car
         
         Process("Waiting for race to load...")
-        if !WaitForMenuRelative(0.158, 0.678, "0xFFFFFF", "0xFFFFFF", 35000) {
+        if !WaitForMenuRelative(0.158, 0.678, "0xFFFFFF", "", 30000) {
             Process("Sync Error: EventLab track failed to load!")
             break
         }
@@ -577,7 +625,7 @@ RaceLoop() {
         PressKey("Enter") ; Confirm Quit
 
         Process("Returning to Free Roam...")
-        if !WaitForMenuRelative(0.061, 0.945, "0xFFFFFF", "0xFFFFFF", 30000) {
+        if !WaitForMenuRelative(0.061, 0.945, "0xFFFFFF", "", 30000) {
             Process("Sync Error: Unable to return to Free Roam!")
             break
         }
@@ -592,7 +640,7 @@ RaceLoop() {
         PressKey("Enter") ; Select Return Home
         PressKey("Enter") ; Confirm Travel to Home
 
-        if !WaitForMenuRelative(0.168, 0.722, "0xFFFFFF", "0xFFFFFF", 20000) {
+        if !WaitForMenuRelative(0.168, 0.722, "0xFFFFFF", "", 20000) {
             Process("Sync Error: Unable to return Home!")
             break
         }   
@@ -779,7 +827,7 @@ UnlockLoop() {
             Process("Opening Car Mastery...")
             PressKey("Enter") ; Select Car Mastery
 
-            if !WaitForMenuRelative(0.176, 0.545, "0xFFFFFF", "0xFFFFFF", 10000, 100) {
+            if !WaitForMenuRelative(0.176, 0.545, "0xFFFFFF", "", 5000, 100) {
                 Process("Sync Error: Car Mastery menu failed to load!")
                 break
             }
@@ -1142,7 +1190,33 @@ WriteNumber(num) {
     }
 }
 
-WaitForMenuRelative(ratioX, ratioY, targetColor, targetColorHDR, timeoutMs := 8000, postDelayMs := 1000) {
+; WaitForMenuRelative(ratioX, ratioY, targetColor, targetColorHDR, timeoutMs := 8000, postDelayMs := 1000) {
+;     global ActiveMode, MasterMode, MasterStart
+;     CoordMode("Pixel", "Screen") 
+;     StartTime := A_TickCount
+    
+;     actualX := Round(ratioX * A_ScreenWidth)
+;     actualY := Round(ratioY * A_ScreenHeight)
+
+;     Loop {
+;         if (ActiveMode != "Race" && ActiveMode != "Buy" && ActiveMode != "Unlock"|| (!MasterMode && MasterStart))
+;             return false
+            
+;         if (PixelGetColor(actualX, actualY) = targetColor || PixelGetColor(actualX, actualY) = targetColorHDR) {
+;             if (postDelayMs > 0)
+;                 Sleep(postDelayMs) ; ── Added directly here! Delays before returning true.
+;             return true 
+;         }
+
+;         if (A_TickCount - StartTime > timeoutMs) {
+;             Process("Sync Error: Menu timed out!")
+;             return false
+;         }
+;         Sleep(50) 
+;     }
+; }
+
+WaitForMenuRelative(ratioX, ratioY, targetColor, targetColorHDR := "", timeoutMs := 10000, postDelayMs := 1000, isFatal := false, variation := 0) {
     global ActiveMode, MasterMode, MasterStart
     CoordMode("Pixel", "Screen") 
     StartTime := A_TickCount
@@ -1151,18 +1225,36 @@ WaitForMenuRelative(ratioX, ratioY, targetColor, targetColorHDR, timeoutMs := 80
     actualY := Round(ratioY * A_ScreenHeight)
 
     Loop {
-        if (ActiveMode != "Race" && ActiveMode != "Buy" && ActiveMode != "Unlock"|| (!MasterMode && MasterStart))
+        ; Global safety abort check
+        if (ActiveMode != "Race" && ActiveMode != "Buy" && ActiveMode != "Unlock" || (!MasterMode && MasterStart))
             return false
             
-        if (PixelGetColor(actualX, actualY) = targetColor || PixelGetColor(actualX, actualY) = targetColorHDR) {
+        ; 1. Check Standard Color (with shade variation tolerance)
+        if PixelSearch(&foundX, &foundY, actualX, actualY, actualX, actualY, targetColor, variation) {
             if (postDelayMs > 0)
-                Sleep(postDelayMs) ; ── Added directly here! Delays before returning true.
+                Sleep(postDelayMs)
             return true 
         }
 
+        ; 2. Check HDR Color (if provided, with shade variation tolerance)
+        if (targetColorHDR != "" && PixelSearch(&foundX, &foundY, actualX, actualY, actualX, actualY, targetColorHDR, variation)) {
+            if (postDelayMs > 0)
+                Sleep(postDelayMs)
+            return true 
+        }
+
+        ; 3. Handle Timeout
         if (A_TickCount - StartTime > timeoutMs) {
-            Process("Sync Error: Menu timed out!")
-            return false
+            if (isFatal) {
+                ; HARD FAIL: Stops the entire macro execution
+                Process("Sync Error: Menu timed out!")
+                return false
+            } else {
+                ; SOFT FAIL: Logs a warning, waits a brief moment, and continues anyway!
+                Process("Sync Warning: Pixel missed. Proceeding blindly...")
+                Sleep(2000) ; Fallback safety cushion to allow slow PCs to finish loading
+                return true 
+            }
         }
         Sleep(50) 
     }
