@@ -4,7 +4,7 @@
 
 ; ╔═════════════════════════════════════════╗
 ; ║        FH6 Wheelspin Macro				║
-; ║        Cyber Noir Edition v1.2.2b       ║
+; ║        Cyber Noir Edition v1.3.0        ║
 ; ╚═════════════════════════════════════════╝
 
 global ActiveMode	:= ""
@@ -22,6 +22,7 @@ global Process_UI	:= ""
 global SkillPtsCount_In	:= 0
 global SkillPtsWant_In	:= 0
 global CarCount_In	    := 0
+global LoopCount_In     := 0
 
 global cActive		:= "FF8FAB"
 global cHighlight	:= "39FF14"
@@ -60,14 +61,25 @@ global PointsLabel_UI	:= ""
 global TimeLabel_UI	    := ""
 global PixelCheck_UI    := ""
 global PremiumCheck_UI  := ""
+global CodeSelect_UI    := ""
 
-global SelectedCar      := "Subaru Impreza 22B"
+global SelectedCar      := "Subaru Impreza 22B-STi"
+global SelectedCode     := "LIQUIDPOTATO"
 global SelectedCarPoint	:= 30
 global PointsTotal 	    := 0
-global PointsGained 	:= 0
+global PointsGain 	    := 0
 global TimeTotal 	    := 0
-global AveragePoints 	:= 9.8
+global AveragePoints 	:= 0
 global MaxPoints 	    := 940
+global MaxSections      := 96
+
+global SpeedLabel_UI    := ""
+global DelaySlider_UI   := ""
+global Multipliers      := [0.25, 0.5, 0.75, 1, 1.5, 2, 2.5]
+global CurrentMultiplier := 1 ; Set default to 1x
+
+global CodeTune         := "293391902"
+global CodeEventLab     := "124198343"
 
 global GuiWidth		    := "w270"
 
@@ -121,17 +133,16 @@ GetPalette() {
     return p
 }
 
-
 ; ══════════════════════════════════════════════
 ;  BUILD GUI
 ; ══════════════════════════════════════════════
 BuildGui(savedVals := "") {
     global MyGui, StatusText, RaceCount_UI, PointsCount_UI, CarCount_UI, SWheelCount_UI, WheelCount_UI, CreditCount_UI
     global TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, UnlockRunTime_UI
-    global PointsLabel_UI, TimeLabel_UI, CarsLabel_UI
+    global PointsLabel_UI, TimeLabel_UI, CarsLabel_UI, CodeSelect_UI, DelaySlider_UI, SpeedLabel_UI
     global Key_UI, Process_UI, CodeTune_UI, CodeEventLab_UI, CarSelect_UI, PixelCheck_UI, PremiumCheck_UI
-    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, AveragePoints, MaxPoints, PointsTotal, PointsGained, TimeTotal
-    global ActiveMode, DarkMode, cActive, cHighlight, cIdle, cTextDim, cPaused, cStat, RaceCount
+    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, LoopCount_In, AveragePoints, MaxPoints, PointsTotal, PointsGain, TimeTotal
+    global ActiveMode, DarkMode, cActive, cHighlight, cIdle, cTextDim, cPaused, cStat, RaceCount, CodeEventLab, CodeTune
 
     ; 1. Inline assignments to save vertical spacing
     p := GetPalette()
@@ -143,7 +154,7 @@ BuildGui(savedVals := "") {
     cStat      := ActiveMode ? p["accent"] : p["textDim"]
     sLabel     := ActiveMode ? "⬤   Running..." : "⬤   Stopped"
 
-    MyGui := Gui("+AlwaysOnTop -MaximizeBox", "FH6 MACRO")
+    MyGui := Gui("+AlwaysOnTop -MaximizeBox", "FH6 MACRO v1.3.0")
     MyGui.BackColor := p["bg"]
 
     ; ── Title Header ──────────────────────────
@@ -172,8 +183,11 @@ BuildGui(savedVals := "") {
     MyGui.Add("Text", "x30 y+6 w155 BackgroundTrans c" p["text"], "⟡   Car Purchase")
     CarCount_In := MyGui.Add("Edit", "x179 yp-3 w63 Center Number Background" p["editBg"] " c" p["text"], savedVals ? savedVals[3] : Floor(MaxPoints / SelectedCarPoint))
 
+    MyGui.Add("Text", "x30 y+6 w155 BackgroundTrans c" p["text"], "⟡   Sequence Loop")
+    LoopCount_In := MyGui.Add("Edit", "x179 yp-3 w63 Center Number Background" p["editBg"] " c" p["text"], savedVals ? savedVals[4] : 99)
+
     MyGui.SetFont("s9 Bold", "Segoe UI")
-    CarSelect_UI := MyGui.Add("DropDownList", "x55 y+10 w160 Center Choose1", ["Subaru Impreza 22B", "Lamborghini Revuelto", "Dodge Viper GTS ACR"])
+    CarSelect_UI := MyGui.Add("DropDownList", "x55 y+10 w160 Center Choose1", ["Subaru Impreza 22B-STi", "Lamborghini Revuelto", "Dodge Viper GTS ACR"])
    
     MyGui.SetFont("s9 norm cE6F1FF", "Segoe UI")
     ;PixelCheck_UI := MyGui.Add("Checkbox", , "  Dynamic Loading  ⏳")
@@ -184,12 +198,12 @@ BuildGui(savedVals := "") {
     MyGui.Add("Text", "x14 y+14 w242 Center BackgroundTrans c" p["textDim"], "TARGET")
     MyGui.Add("Text", "x14 y+0  w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-    PointsGained := GetMinScore(SkillPtsWant_In.Value)
-    PointsTotal  := PointsGained + SkillPtsCount_In.Value
+    PointsGain := GetMinScore(SkillPtsWant_In.Value)
+    PointsTotal  := PointsGain + SkillPtsCount_In.Value
     TimeTotal    := CalcTimeRace(SkillPtsWant_In.Value) + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
 
     MyGui.SetFont("s9 norm", "Segoe UI Light")
-    PointsLabel_UI := MyGui.Add("Text", "x14 y+5 w242 Center BackgroundTrans c" p["cIdle"], "Est. Skill Points Gained  —  " PointsGained)
+    PointsLabel_UI := MyGui.Add("Text", "x14 y+5 w242 Center BackgroundTrans c" p["cIdle"], "Est. Skill Points Gain  —  " PointsGain)
     TimeLabel_UI   := MyGui.Add("Text", "x14 y+2 w242 Center BackgroundTrans c" p["cIdle"], "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal), Round((TimeTotal - Floor(TimeTotal)) * 60)))
     CarsLabel_UI   := MyGui.Add("Text", "x14 y+2 w242 Center BackgroundTrans c" p["cIdle"], "Recommended Car Purchase  —  " Floor(PointsTotal / SelectedCarPoint))
 
@@ -247,19 +261,30 @@ BuildGui(savedVals := "") {
     ThemeBtn.OnEvent("Click", (*) => ToggleTheme())
 
     ; ── Footer Codes ──────────────────────────
-    MyGui.SetFont("s9", "Segoe UI Emoji")
-    CodeTune_UI     := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" p["cIdle"], "Subaru 22B Tune Code - 293 391 902")
-    CodeEventLab_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "EventLab Race Code - 124 198 343")
+
+    MyGui.SetFont("s9 norm", "Segoe UI")
+    SpeedLabel_UI := MyGui.Add("Text", "x0 y+20 w270 Center", "Delay Multiplier: 1x")
+    DelaySlider_UI := MyGui.Add("Slider", "x35 y+5 w200 Range1-7", 4) 
+    DelaySlider_UI.OnEvent("Change", UpdateSpeed)
+
+    MyGui.SetFont("s8 bold", "Segoe UI")
+    CodeSelect_UI := MyGui.Add("DropDownList", "x85 y+5 w100 Center Choose1", ["LIQUIDPOTATO", "AMMAGEDON"])
+
+    CodeSelect_UI.OnEvent("Change", UpdateCode)
+    
+    MyGui.SetFont("s9 norm", "Segoe UI Emoji")
+    CodeTune_UI     := MyGui.Add("Text", "x0 y+5 w270 Center BackgroundTrans c" p["cIdle"], "Subaru 22B Tune Code")
+    CodeEventLab_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "EventLab Race Code")
 
     CodeTune_UI.OnEvent("Click", (*) => (
-        A_Clipboard := "293391902"
-        ToolTip("Subaru 22B Tune Code Copied!")
+        A_Clipboard := CodeSelect_UI.Text = "LIQUIDPOTATO" ?  "293391902" : "206657706",
+        ToolTip("Subaru 22B Tune Code Copied! " CodeTune),
         SetTimer(() => ToolTip(), -2000)
     ))
 
     CodeEventLab_UI.OnEvent("Click", (*) => (
-        A_Clipboard := "124198343"
-        ToolTip("EventLab Race Code Copied!")
+        A_Clipboard := CodeSelect_UI.Text = "LIQUIDPOTATO" ? "124198343" : "113938786",
+        ToolTip("EventLab Race Code Copied! " CodeEventLab),
         SetTimer(() => ToolTip(), -2000)
     ))
 
@@ -365,13 +390,14 @@ ToggleMode(mode) {
 
 ToggleAll() {
     global ActiveMode, MasterMode, MasterStart
-    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In
-    global PointsTotal, PointsGained, SelectedCarPoint, cHighlight, cIdle
+    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, LoopCount_In
+    global PointsTotal, PointsGain, SelectedCarPoint, cHighlight, cIdle
 
     StartIndicators()
     MasterMode := !MasterMode
+    LoopCount := 0
 
-    while MasterMode {
+    while (MasterMode && LoopCount < LoopCount_In.Value) {
 	
 	    MasterStart := true
 
@@ -396,6 +422,9 @@ ToggleAll() {
 
         UpdateSkillPtsWant({Value: PointsTotal})
         ValidateSkillPtsWant({Value: PointsTotal})
+
+        LoopCount++
+        LoopCount_In.Value -= LoopCount
     }
     MasterMode := ""
     MasterStart := false
@@ -487,7 +516,8 @@ RaceLoop() {
     global ActiveMode, MasterMode, MasterStart, SkillPtsCount_In, SkillPtsWant_In, CarCount_In
     global cActive, cHighlight, cIdle
     global RaceCount, RaceCount_UI, PointsCount_UI, CarCount_UI, RaceRunTime_UI, PixelCheck_UI
-    global RaceLoadingTime, FinLoadingTime, AveragePoints, Maxpoints, PointsTotal, PointsGained, PointsCount, RaceRunSeconds
+    global RaceLoadingTime, FinLoadingTime, AveragePoints, Maxpoints, PointsTotal, PointsGain, PointsCount, RaceRunSeconds
+    global CodeEventLab_UI, CodeEventLab, CodeSelect_UI
 
     ; Local helper to cleanly check if the macro should stop
     CheckAbort() => (ActiveMode != "Race" || (!MasterMode && MasterStart))
@@ -525,13 +555,13 @@ RaceLoop() {
         PressKey("Up") ; Navigate to Share Code
         PressKey("Enter", 1000) ; Enter Text
 
-        WriteNumber(124198343) ; EventLab Code
+        WriteNumber(Number(CodeEventLab))
 
         PressKey("Enter") ; Submit Code
         PressKey("Down") ; Navigate to Confirm
         PressKey("Enter") ; Select Confirm
 
-        if !WaitForMenuRelative("Waiting for EventLab to load...", 0.427, 0.594, "0x000000", , 8000) {
+        if !WaitForMenuRelative("Waiting for EventLab to load...", 0.427, 0.594, "0x000000", , 10000) {
             Process("Sync Error: EventLab search timed out!")
             break
         }
@@ -542,6 +572,8 @@ RaceLoop() {
 
         Process("Entering EventLab...")
         PressKey("Enter", 3000) ; Choose Race Type
+
+        Process("Select Favourited Car...")
         PressKey("Y") ; Filter
         PressKey("Enter") ; Toggle
         PressKey("Esc", 1000) ; Back to My Cars
@@ -557,48 +589,127 @@ RaceLoop() {
         }
 
         Process("Start Race Event...")
-        PressKey("Enter", 3000) ; Start Race
+        PressKey("Enter", 2500) ; Start Race
         if CheckAbort()
             break
         
-        Process("Countdown...")
-        Sleep(3000)
+        Process("Countdown...", 3000)
         PressKey("W", 50) ; Extra input to start the timer on the first run
 
         RaceLoadingTime := RaceRunSeconds ; Loading time can vary, so we capture it dynamically for more accurate estimates
+        PointsCount_UI.SetFont("c" cHighlight)
 
-        While (PointsCount < PointsGained) {
-            PointsCount_UI.SetFont("c" cHighlight)
-            Process("Throttling...")
+        if CodeSelect_UI.Text = "LIQUIDPOTATO" {
+            AveragePoints := 9.8
 
-            PressKey("w down", 50) ; Press throttle to move forward
-            Sleep(30000)
-            PressKey("w up", 50) ; Release throttle to prevent timeout
+            While (PointsCount < PointsGain) {
+                Process("Throttling...")
 
-            if CheckAbort()
-                break
-            
-            RaceCount++
-
-            ;PointsCount := EstimateScore(RaceRunSeconds - RaceLoadingTime)
-            PointsCount := Floor(RaceCount * AveragePoints) ; Using average points per race for estimation to account for variability
-            PointsCount_UI.Value := "💡   Est. Skill Points Gained  —   " PointsCount
-            
-            if (Mod(RaceCount, 4) = 0 && PointsCount < PointsGained) {
                 PressKey("w down", 50) ; Press throttle to move forward
-                Sleep(7700) ; 7.7 seconds of extra throttle for the car to turn around
+                Sleep(30000)
                 PressKey("w up", 50) ; Release throttle to prevent timeout
+
+                if CheckAbort()
+                    break
+                
+                RaceCount++
+
+                ;PointsCount := EstimateScore(RaceRunSeconds - RaceLoadingTime)
+                PointsCount := Floor(RaceCount * AveragePoints) ; Using average points per race for estimation to account for variability
+                PointsCount_UI.Value := "💡   Est. Skill Points Gained  —   " PointsCount
+                
+                if (Mod(RaceCount, 4) = 0 && PointsCount < PointsGain) {
+                    PressKey("w down", 50) ; Press throttle to move forward
+                    Sleep(7700) ; 7.7 seconds of extra throttle for the car to turn around
+                    PressKey("w up", 50) ; Release throttle to prevent timeout
+                }
+            }
+
+            Process("Quitting the Event...", 2000)
+            PressKey("Esc", 1000) ; Pause Menu
+            PressKey("Right") ; Navigate to Quit
+            PressKey("Enter") ; Quit Event
+            PressKey("Enter") ; Confirm Quit  
+        }
+        else If CodeSelect_UI.Text = "AMMAGEDON" {
+            AveragePoints := 9.5
+            StartTime := A_TickCount
+
+            while (PointsCount < PointsGain) {
+
+                ; if (RaceCount = 0) || (Mod(RaceCount, 50) = 0){
+                ;     Process("Throttling...")
+                ;     PressKey("w down", 19000) ; Press throttle to move forward
+                ; } else {
+                ;     Process("Throttling...")
+                ;     PressKey("w down", 22000) ; Press throttle to move forward
+                ; }
+                ; PressKey("W up", 1000)
+
+                ; Process("Braking...")
+                ; PressKey("S down", 1000) ; Brake throttle to prevent overaccelerating
+                ; PressKey("S up", 1000) ; Brake throttle to prevent overaccelerating
+
+                Process("Throttling...")
+                PressKey("w down", 20000)
+                PressKey("w up")
+
+                Process("Braking...")
+                PressKey("s down", 1500)
+                PressKey("s up")
+
+                Process("Throttling...")
+                PressKey("w down", 2000)
+                PressKey("w up")
+
+
+                if CheckAbort()
+                    break
+                
+                RaceCount++
+
+                PointsCount := Floor(RaceCount * AveragePoints) ; Using average points per race for estimation to account for variability
+                PointsCount_UI.Value := "💡   Est. Skill Points Gained  —   " PointsCount
+                
+                if (Mod(RaceCount, 50) = 0) {
+
+                    if !WaitForMenuRelative("Waiting for leaderboard to load...", 0.166, 0.292, "0xFFFFFF", "", 10000) {
+                        Process("Sync Error: EventLab leaderboard failed to load!")
+                        break
+                    }
+                    
+                    if PointsCount < PointsGain {
+                        Process("Restarting the Event...")
+                        PressKey("X") ; Restart
+                        PressKey("Enter") ; Confirm Restart Event
+
+                        if !WaitForMenuRelative("Waiting for next round to load...", 0.174, 0.683, "0xFFFFFF", "", 20000) {
+                            Process("Sync Error: EventLab next round failed to load!")
+                            break
+                        }
+                        Process("Entering the Event")
+                        PressKey("Enter", 3000) ; Start Race Event
+                        Process("Countdown...", 3000)
+                        PressKey("W", 50) ; Extra input to start the timer on the first run
+                    }
+                    else {
+                        Process("Quitting the Event...")
+                        PressKey("Enter") ; Continue
+                        break
+                    }
+                }
+            }
+
+            if (!(Mod(RaceCount, 50) = 0)) {
+                Process("Quitting the Event...", 2000)
+                PressKey("Esc", 1000) ; Pause Menu
+                PressKey("Right") ; Navigate to Quit
+                PressKey("Enter") ; Quit Event
+                PressKey("Enter") ; Confirm Quit
             }
         }
-        
-        Process("Quitting the Event...")
-        Sleep(2000)
-        PressKey("Esc", 1000) ; Pause Menu
-        PressKey("Right") ; Navigate to Quit
-        PressKey("Enter") ; Quit Event
-        PressKey("Enter") ; Confirm Quit
 
-        if !WaitForMenuRelative("Returning to Free Roam...", 0.061, 0.945, "0xFFFFFF", "", 20000) {
+        if !WaitForMenuRelative("Returning to Free Roam...", 0.061, 0.945, "0xFFFFFF", "", 30000) {
             Process("Sync Error: Unable to return to Free Roam!")
             break
         }
@@ -656,7 +767,7 @@ BuyLoop() {
 
         ; Upgraded to a clean Switch block for car selection menu logic
         Switch SelectedCar {
-            Case "Subaru Impreza 22B":
+            Case "Subaru Impreza 22B-STi":
                 Loop 3
                     PressKey("Up", 50)
                 Loop 3
@@ -709,6 +820,7 @@ BuyLoop() {
         Process("Returning to Home...")
         Loop 3
             PressKey("Esc") ; Navigate to Home Menu
+        Sleep(500)
         PressKey("Up") ; Navigate to Drive
 
         break
@@ -732,7 +844,7 @@ UnlockLoop() {
         UnlockRunTime_UI.SetFont("c" cHighlight)
 
         Switch SelectedCar {
-            Case "Subaru Impreza 22B":
+            Case "Subaru Impreza 22B-STi":
                 SWheelCount_UI.SetFont("c" cHighlight)
             Case "Lamborghini Revuelto":
                 SWheelCount_UI.SetFont("c" cHighlight)
@@ -798,9 +910,9 @@ UnlockLoop() {
             if CheckAbort()
                 break
     
-            Process("Unlocking Wheelspins...")
+            Process("Unlocking Car Mastery...")
             Switch SelectedCar {
-                Case "Subaru Impreza 22B":
+                Case "Subaru Impreza 22B-STi":
                     PressKey("Enter", 1100)
                     PressKey("Right", 300)
                     Loop 3 {
@@ -941,6 +1053,9 @@ StartIndicators() {
     CarCount_In.Enabled := false
     CarSelect_UI.Enabled := false
     PremiumCheck_UI.Enabled := false
+    DelaySlider_UI.Enabled := false
+    CodeSelect_UI.Enabled := false
+    LoopCount_In.Enabled := false
 
     SetTimer(TotalTimerTick, 1000)
 }
@@ -980,14 +1095,34 @@ ResetIndicators() {
     CarCount_In.Enabled := true
     CarSelect_UI.Enabled := true
     PremiumCheck_UI.Enabled := true
+    DelaySlider_UI.Enabled := true
+    CodeSelect_UI.Enabled := true
+    LoopCount_In.Enabled := true
+
 }
 
 ; ══════════════════════════════════════════════
 ;  UPDATE VALUE INPUT
 ; ══════════════════════════════════════════════
+UpdateCode(ctrl, *) {
+    global SelectedCode, MaxPoints, MaxSections, AveragePoints, SkillPtsCount_In, SkillPtsWant_In, CarCount_In, PointsTotal, CodeTune, CodeEventLab
+
+    SelectedCode:= ctrl.Text
+
+    MaxSections := SelectedCode = "LIQUIDPOTATO" ? 96 : 110
+    MaxPoints := SelectedCode = "LIQUIDPOTATO" ? 940 : 990
+    AveragePoints := SelectedCode = "LIQUIDPOTATO" ? 9.8 : 9.5
+    
+    CodeTune := CodeSelect_UI.Text = "LIQUIDPOTATO" ?  "293391902" : "206657706"
+    ;CodeEventLab := CodeSelect_UI.Text = "LIQUIDPOTATO" ? "124198343" : "113938786"
+    CodeEventLab := CodeSelect_UI.Text = "LIQUIDPOTATO" ? "124198343" : "102089819"
+    
+    SkillPtsWant_In.Value := UpdateSkillPtsWant({Value: MaxPoints})
+    CarCount_In.Value := Floor(PointsTotal / SelectedCarPoint)
+}
 
 UpdateCar(ctrl,*) {
-    global SelectedCar, SelectedCarPoint, PointsTotal
+    global SelectedCar, SelectedCarPoint, PointsTotal, CarSelect_UI, CarsLabel_UI, CarCount_In
     
     SelectedCar := ctrl.Text
     SelectedCarPoint := CarSelect_UI.Text = "Lamborghini Revuelto" ? 39 : 30
@@ -999,7 +1134,7 @@ UpdateCar(ctrl,*) {
 }
 
 UpdateSkillPts(ctrl, *) {
-    global SelectedCarPoint, TimeTotal, PointsTotal, CarCount_In, SkillPtsWant_In, SelectedCarPoint, AveragePoints, PointsGained, MaxPoints
+    global SelectedCarPoint, TimeTotal, PointsTotal, CarCount_In, SkillPtsWant_In, SelectedCarPoint, AveragePoints, PointsGain, MaxPoints
     global PointsLabel_UI, TimeLabel_UI, CarsLabel_UI
 
     value := ctrl.value
@@ -1011,20 +1146,20 @@ UpdateSkillPts(ctrl, *) {
 	
     SkillPtsWant_In.Value := 999 - value > MaxPoints ? MaxPoints : 999 - value
 
-    PointsGained := GetMinScore(SkillPtsWant_In.Value)	
-    PointsTotal := PointsGained + value
+    PointsGain := GetMinScore(SkillPtsWant_In.Value)	
+    PointsTotal := PointsGain + value
     	
     CarCount_In.Value := Floor(PointsTotal / SelectedCarPoint)
 	TimeTotal := CalcTimeRace(SkillPtsWant_In.Value)  + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
 
-    PointsLabel_UI.Value := "Est. Skill Points Gained  —  " PointsGained
+    PointsLabel_UI.Value := "Est. Skill Points Gain  —  " PointsGain
     TimeLabel_UI.Value :=  "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal) , Round((TimeTotal - Floor(TimeTotal)) * 60))
     CarsLabel_UI.Value := "Recommended Car Purchase  —  " Floor(PointsTotal / SelectedCarPoint)
 }
     
 UpdateSkillPtsWant(ctrl, *) {
 
-    global SelectedCarPoint, TimeTotal, PointsTotal, CarCount_In, SkillPtsCount_In, SelectedCarPoint, AveragePoints, PointsGained, MaxPoints
+    global SelectedCarPoint, TimeTotal, PointsTotal, CarCount_In, SkillPtsCount_In, SelectedCarPoint, AveragePoints, PointsGain, MaxPoints
     global PointsLabel_UI, TimeLabel_UI, CarsLabel_UI, PointsCount_UI
 
     value := ctrl.value
@@ -1036,15 +1171,17 @@ UpdateSkillPtsWant(ctrl, *) {
     else if (value > MaxPoints)
         value := MaxPoints
 
-    PointsGained := GetMinScore(value)	
-    PointsTotal := PointsGained + SkillPtsCount_In.Value
+    PointsGain := GetMinScore(value)
+    PointsTotal := PointsGain + SkillPtsCount_In.Value
 	
     CarCount_In.Value := Floor(PointsTotal / SelectedCarPoint)
 	TimeTotal := CalcTimeRace(value) + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
     
-    PointsLabel_UI.Value := "Est. Skill Points Gained  —  " PointsGained
+    PointsLabel_UI.Value := "Est. Skill Points Gain  —  " PointsGain
     TimeLabel_UI.Value :=  "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal) , Round((TimeTotal - Floor(TimeTotal)) * 60))
     CarsLabel_UI.Value := "Recommended Car Purchase  —  " Floor(PointsTotal / SelectedCarPoint)
+
+    return value
 }
 
 ValidateSkillPts(ctrl, *) {
@@ -1078,18 +1215,20 @@ ValidateSkillPtsWant(ctrl, *) {
 ; ══════════════════════════════════════════════
 
 GetMinScore(score) {
-    pointsPerSection := MaxPoints / 96
+    global SelectedCode, MaxPoints, MaxSections
+
+    pointsPerSection := MaxPoints / MaxSections
     sections := Ceil(score / pointsPerSection)
     return Floor(sections * pointsPerSection)
 }
 
 CalcTimeRace(score) {
-    global RaceLoadingTime, FinLoadingTime
+    global RaceLoadingTime, FinLoadingTime, MaxSections, SelectedCode
 
-    pointsPerSection := MaxPoints / 96
-    secPerSection := 30
-    secPerRow := 7
-    sectionsPerRow := 4
+    pointsPerSection := MaxPoints / MaxSections
+    secPerSection := SelectedCode = "LIQUIDPOTATO" ? 30 : 20
+    secPerRow := SelectedCode = "LIQUIDPOTATO" ? 7 : 4
+    sectionsPerRow := SelectedCode = "LIQUIDPOTATO" ? 4 : 1
 
     sections := Ceil(score / pointsPerSection)
     rows := Ceil(sections / sectionsPerRow)
@@ -1107,31 +1246,6 @@ CalcTimeBuy(car) {
 CalcTimeUnlock(car) {
     totalTime := car * 31
     return totalTime / 60
-}
-
-EstimateScoreFast(time) {
-    global Maxpoints
-
-    pointsPerSection := Maxpoints / 96
-    secPerSectionEffective := 31.875
-    
-    sections := Floor(time / secPerSectionEffective)
-    return Floor(sections * pointsPerSection)
-}
-
-EstimateScore(time) {
-    global MaxPoints
-
-    pointsPerSection := MaxPoints / 96
-
-    fullRows := Floor(time / 128)
-
-    remaining := Mod(time, 128)
-
-    sections := fullRows * 4
-    sections += Min(4, Floor(remaining / 30))
-
-    return Floor(sections * pointsPerSection)
 }
 
 ; ══════════════════════════════════════════════
@@ -1177,13 +1291,16 @@ UnlockTimerTick() {
 ; ══════════════════════════════════════════════
 
 WaitForMenuRelative(text, ratioX, ratioY, targetColor, targetColorHDR := "", timeoutMs := 8000, postDelayMs := 1000, isFatal := false, variation := 0) {
-    global ActiveMode, MasterMode, MasterStart
+    global ActiveMode, MasterMode, MasterStart, CurrentMultiplier
     CoordMode("Pixel", "Screen") 
     StartTime := A_TickCount
     LastSec := -1 ; ── Tracks seconds to prevent spamming your status window
     
     actualX := Round(ratioX * A_ScreenWidth)
     actualY := Round(ratioY * A_ScreenHeight)
+
+    timeoutMs *= CurrentMultiplier
+    postDelayMs *= CurrentMultiplier
 
     Loop {
         if (ActiveMode != "Race" && ActiveMode != "Buy" && ActiveMode != "Unlock" || (!MasterMode && MasterStart))
@@ -1221,8 +1338,7 @@ WaitForMenuRelative(text, ratioX, ratioY, targetColor, targetColorHDR := "", tim
                 Process("Sync Error: Menu timed out!")
                 return false
             } else {
-                Process("Sync Warning: Pixel missed. Proceeding blindly...")
-                Sleep(2000)
+                Process("Sync Warning: Pixel missed. Proceeding blindly...", 2000)
                 return true 
             }
         }
@@ -1248,7 +1364,7 @@ GetCoordsColor() {
 ; ══════════════════════════════════════════════
 
 PressKey(key, delay := 500) {
-    global Key_UI, cHighlight, cIdle
+    global Key_UI, cHighlight, cIdle, CurrentMultiplier
 
     ; 1. Determine UI Display Name (Supports grouping multiple cases)
     switch key {
@@ -1286,13 +1402,14 @@ PressKey(key, delay := 500) {
     ; 4. Send the hardware level scan code
     Send("{" sendKey "}")
     
-    Sleep(delay)
+    Sleep(CurrentMultiplier * delay)
 }
 
-Process(text) {
+Process(text, delay := 0) {
     global Process_UI
 
     Process_UI.Value := "⚙️  " text
+    Sleep(delay)
 }
 
 ; ══════════════════════════════════════════════
@@ -1305,6 +1422,19 @@ WriteNumber(num) {
         Send("{" digit "}")
         Sleep(50) ; optional delay between key presses
     }
+}
+
+UpdateSpeed(*) {
+    global SpeedLabel_UI, DelaySlider_UI
+
+    ; Get the slider's current physical position (1 through 7)
+    sliderPosition := DelaySlider_UI.Value
+    
+    ; Pull the matching decimal value from our array
+    Global CurrentMultiplier := Multipliers[sliderPosition]
+    
+    ; Update the Text Label on the GUI
+    SpeedLabel_UI.Text := "Delay Multiplier: " CurrentMultiplier "x"
 }
 
 ; ══════════════════════════════════════════════

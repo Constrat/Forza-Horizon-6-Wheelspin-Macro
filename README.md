@@ -39,6 +39,7 @@ The original base script was developed by **6ftFish**, and this version has been
 Before installing, ensure your system strictly meets the following layout and control requirements:
 * **Operating System:** Windows 10 / Windows 11
 * **AutoHotkey:** [AutoHotkey v2](https://www.autohotkey.com) (v1 scripts will not run)
+* **Execution Permissions:** You must run the script as **Administrator** if the macro does not execute or register inputs as intended.
 * **Game Language:** English (UI navigation and dynamic timing validation logic are optimized for the English game client).
 * **🖥️ Display Settings (Strict Requirements):**
   * **Aspect Ratio:** Must be **16:9 Resolution** only (e.g., 1920x1080, 2560x1440, 3840x2160).
@@ -53,16 +54,20 @@ Before installing, ensure your system strictly meets the following layout and co
 1. Download the latest version of AutoHotkey v2 and install it.
 2. Clone this repository or download it as a ZIP file:
 ```bash
-   git clone [https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro.git](https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro.git)
+   `git clone https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro.git`
 ```
 3. Extract the files (if downloaded as a ZIP) to a dedicated folder.
-4. Double-click the `FH6_Macro_CyberNoir.ahk` file to launch the application interface.
+4. Double-click the `FH6_Macro_CyberNoir.ahk` file to launch the application interface. **Note:** If the macro inputs do not register properly in-game, right-click the file and select **Run as Administrator**.
 
 ---
 
 ## ✨ Key Features
 
 * 🎨 Custom GUI layout with dark/light theme options on-the-fly.
+* ⏱️ **Execution Speed Control:** Integrated a Delay Multiplier slider (`DelaySlider_UI`) supporting 0.25x to 2.5x scaling to dynamically adjust input delays and pixel detection timeouts based on system performance.
+* 🔁 **Sequence Looping:** Features a dedicated loop counter input (`LoopCount_In`) allowing the main initialization sequence to cycle automatically for a specified duration.
+* 🗺️ **Track Profiles:** Dropdown track selection (`CodeSelect_UI`) supporting distinct configurations for layouts like "LIQUIDPOTATO" and "AMMAGEDON".
+* 🏁 **Bespoke Race Logic:** Tailored acceleration/braking intervals and an automated 50-race continuation mechanic optimized specifically for advanced profiles like AMMAGEDON.
 * ⌨️ **Hardware-Level Input:** Employs low-level physical scan codes (`GetKeySC`) inside `PressKey()` for absolute reliability, minimizing input drops and bypassing focus errors.
 * 👁️ **Pixel-Aware Engine:** Dynamic menu loading synchronization checks to systematically mitigate desync issues.
 * 💎 **Premium User Support:** Adapts purchasing pathways contextually for Premium players.
@@ -70,8 +75,8 @@ Before installing, ensure your system strictly meets the following layout and co
 * 🏁 Automated race loop execution with structural timing cushions and recovery checks.
 * 🚗 Fast-navigation car purchasing routines.
 * 🛞 Automated wheelspin and cash reward perk unlocking.
-* 📈 Skill point estimation tracking and continuous calibration logic.
-* 📋 Click-to-copy in-game share code integration.
+* 📈 Skill point calibration tracking with dynamic profile-based calculations.
+* 📋 Click-to-copy in-game share code integration that updates dynamically based on the active track profile.
 * 🛠️ **Developer Diagnostic Tool:** Integrated automated coordinate/color calibration utility.
 
 ---
@@ -83,7 +88,7 @@ The automation workflow is split into three independent processes that can be ex
 ### 🏁 Race Mode (Hotkey `\`)
 Runs only the race automation process.
 * Automatically interfaces with the custom EventLab menu spaces.
-* Drives the configured layout automatically while evaluating estimated points.
+* Drives the configured layout automatically using profile-specific telemetry and logic loops.
 
 ### 🚗 Buy Mode (Hotkey `[`)
 Runs only the vehicle purchasing process.
@@ -97,7 +102,7 @@ Runs only the reward unlocking process.
 * Redeems wheelspins, super wheelspins, or credit payouts depending on the active car type.
 
 ### ♾️ Full Automation Loop (Hotkey `/`)
-Combines all processes into a single continuous workflow (Race → Buy → Unlock → Repeat). The macro will continuously cycle through all stages, properly maintaining residual skill point offsets across full cycles.  
+Combines all processes into a single continuous workflow (Race → Buy → Unlock → Repeat). The macro will continuously cycle through all stages for the designated number of sequence loops, properly maintaining residual skill point offsets across full cycles.  
 🎥 [Watch the Full Loop Demonstration](https://www.youtube.com/watch?v=6ezhyNeIYko)
 
 ---
@@ -105,15 +110,15 @@ Combines all processes into a single continuous workflow (Race → Buy → Unloc
 ## 🧠 Core Systems
 
 ### 🎛️ Automation Engine
-Controls in-game navigation via rock-solid hardware scan codes (`GetKeySC`), featuring responsive color-sampling verification layers (`WaitForMenuRelative`) to ensure menus are fully rendered before issuing subsequent commands.
+Controls in-game navigation via rock-solid hardware scan codes (`GetKeySC`), featuring responsive color-sampling verification layers (`WaitForMenuRelative`, fully scaled by the selected speed multiplier) to ensure menus are rendered before issuing subsequent commands.
 
 ### 📊 Telemetry System
 Actively tracks total running time, loop-specific session times, total acquired cars, and calculated point outputs with a clean, unified presentation.
 
 ### 🧮 Progress Estimation
-Uses calculated internal algorithms to estimate real-world session metrics, required item counts, and completion windows.
+Uses optimized internal functions (`CalcTimeRace` and `GetMinScore`) to dynamically calculate real-world session metrics, required item counts, and completion windows based on the selected track profile's maximum sections and point rules.
 
-* **Tested EventLab Results:** EventLab race consistently produces a minimum of 940 Skill Points and a maximum of 945 Skill Points, with a typical completion time of around 51 minutes. The application tracks updates safely using a baseline of 9.8 points per sequence interval.
+* **Dynamic Performance Scaling:** Replaces fixed estimation routines with math-driven profile tracking to accurately log performance updates (`PointsGain`) per sequence interval.
 * **Maximum Skill Point Calculation:** The in-game Skill Point cap is 999. The application calculates your target based on your current points plus the estimated session gain, capping out automatically.
 
 ### 🎁 The Reward Vehicles
@@ -148,7 +153,10 @@ You can choose which vehicle the macro purchases and unlocks perks for via the G
 Before using the macro, ensure your game is properly configured. The automation relies on consistent menus, pixel checking, and layout positioning.
 
 ### 🏁 Starting Position
-Make sure you are in the Home Menu, loaded fully into an active session (no loading screens), with active keyboard input before starting any session.  
+Make sure you are in the Home Menu, loaded fully into an active session (no loading screens), with active keyboard input before starting any session. 
+
+⚠️ **CRITICAL LOCATION WARNING:** Your active player starting home location **cannot** be set to **The Estate** or any **Festival Sites**. These spawn choices alter the structural menu indexes and camera initialization points, breaking the menu-driven logic paths.
+
 📌 All sessions use this identical baseline starting structure.
 
 <p align="center">
@@ -156,7 +164,10 @@ Make sure you are in the Home Menu, loaded fully into an active session (no load
 </p>
 
 ### 🎯 EventLab Menu Setup
-Ensure the EventLab system is accessible and the search-by-code feature is unlocked. The macro will automatically input the following EventLab code: `124 198 343`
+Ensure the EventLab system is accessible and the search-by-code feature is unlocked. The macro provides **two distinct EventLab tracks** to choose from via the `CodeSelect_UI` dropdown menu:
+
+*   **LIQUIDPOTATO ("960sp per 50 minutes"):** The baseline standard. This track offers unmatched consistency and path stability, making it the safest option for extended, unattended overnight farming loops.
+*   **AMMAGEDON ("500sp per 20 minutes"):** A newer track profile that is theoretically faster in terms of skill points generated per minute. However, it is **not as consistent** as the LIQUIDPOTATO track and there are risks of crashing your car and getting stuck. If you choose to run this track, select **AMMAGEDON** from the dropdown menu and ensure your game is locked to a **very minimum and highly recommended 60 FPS** to prevent physics or script synchronization drops.
 
 <p align="center">
   <img width="1941" height="896" alt="EventLab Setup 1" src="https://github.com/user-attachments/assets/c0dab41f-01bf-4975-99a9-bf48ff36028a"> 
@@ -170,13 +181,16 @@ Ensure the EventLab system is accessible and the search-by-code feature is unloc
 The automation requires a highly specific vehicle configuration to function properly.
 
 ### ✔️ Required Vehicle Configuration
-* Subaru Impreza 22B-STi Version must be set as your **ONLY** favorited vehicle inside your garage container.
+* Subaru Impreza 22B-STi must be set as your **ONLY** favorited vehicle inside your garage container.
 * All skill tree perk allocations must be fully maxed out (all mastery upgrades unlocked) on that main vehicle.
 * No other cars can be configured as favorites to avoid structural index selection conflicts during automation passes.
 
 ### 🧩 Tuning Setup
-Apply the following tuning configuration parameters to your target tracking vehicle.  
-📌 Tuning Code: `293 391 902`
+Apply the appropriate tuning configuration parameters to your Subaru depending on your chosen track layout:
+*(Note: These codes can be conveniently copied directly from the GUI footer within the application)*
+
+*   **For LIQUIDPOTATO:** Tuning Code `293 391 902`
+*   **For AMMAGEDON:** Tuning Code `206 657 706`
 
 <p align="center">
   <img width="2559" height="1439" alt="Tuning Setup" src="https://github.com/user-attachments/assets/13020a98-4b58-4c2d-862f-bf1f2982068b"> 
@@ -198,6 +212,7 @@ Verify your in-game configurations match the settings below for maximum consiste
 | Braking | ASSISTED |
 | Steering | AUTO-STEERING |
 | Shifting | AUTOMATIC |
+| Framerate | **60 FPS Minimum** |
 
 <p align="center">
   <img width="2559" height="1438" alt="Difficulty Settings" src="https://github.com/user-attachments/assets/43f2059b-4fb6-4540-a573-7ff43abfd561">
@@ -249,13 +264,16 @@ Navigate to **Settings → HUD & Gameplay** and adjust the UI boundaries to the 
 ## 🔧 Troubleshooting & FAQ
 
 ### Q: The script immediately errors out with a "Sync Error" loop.
-**A:** Ensure your game is in dedicated **Fullscreen** mode, using a **16:9 resolution**, and verify that absolutely no window panels, overlays, or pop-ups are obscuring the **left half of your screen**. 
+**A:** Ensure your game is in dedicated **Fullscreen** mode, using a **16:9 resolution**, and verify that absolutely no window panels, overlays, or pop-ups are obscuring the **left half of your screen**. If issues persist, consider shifting the Delay Multiplier slider to a higher value to scale up detection timeouts.
+
+### Q: The macro runs but clicks or keystrokes do not register in-game.
+**A:** Windows security policies often block automated inputs within high-privilege applications like games. Close the macro, right-click `FH6_Macro_CyberNoir.ahk`, and select **Run as Administrator** to grant the execution loop necessary device input privileges.
 
 ### Q: The vehicle does not turn or navigate menus properly.
-**A:** The macro hooks into default **WASD keyboard mappings** to manipulate menus and vehicles. Version 1.2.2 now translates keys directly into hardware scan codes (`GetKeySC`) to support all keyboard layouts.
+**A:** The macro hooks into default **WASD keyboard mappings** to manipulate menus and vehicles. Keys translate directly into hardware scan codes (`GetKeySC`) to (hopefully) support all physical keyboard layouts.
 
 ### Q: The vehicle collides with walls during the EventLab loop session.
-**A:** Double-check your simulation preferences profile setup against the difficulty parameters. Both **Auto-Steering** and **Assisted Braking** must be enabled for the vehicle path automation routine to process cleanly without human inputs.
+**A:** Double-check your simulation preferences profile setup against the difficulty parameters. Both **Auto-Steering** and **Assisted Braking** must be enabled for the vehicle path automation routine to process cleanly without human inputs. Distinct tracks like AMMAGEDON also employ automated pacing modifications to optimize lane tracking.
 
 ## ❓ Pixel Detection FAQ
 
@@ -277,7 +295,7 @@ Doing either of these stops Windows from rendering the game engine to your graph
 **A:** The script uses absolute screen-percentage math to find menu elements. On an Ultrawide (21:9) or older office monitor (16:10/4:3), the game stretches or adds black bars. This physics shift pushes the UI buttons away from their standard 16:9 geometric positions, making the script look in empty space.
 
 ### Q: I keep seeing "Sync Warning: Pixel missed. Proceeding blindly..." in the console. Is the script broken?
-**A:** No! This is the built-in **Soft-Fail Safety Net**. If your PC lags or your graphic settings cause a slight color mismatch, the script recognizes it missed the pixel. Instead of crashing out and breaking the farm loop, it logs a warning, waits a brief 2-second buffer for safety, and continues running the sequence normally.
+**A:** No! This is the built-in **Soft-Fail Safety Net**. If your PC lags or your graphic settings cause a slight color mismatch, the script recognizes it missed the pixel. Instead of crashing out and breaking the farm loop, it logs a warning, waits a brief scaled buffer for safety, and continues running the sequence normally.
 
 ---
 
@@ -289,20 +307,20 @@ This tool simulates user actions and monitors menu pixel updates, meaning:
 * 🌐 Background asset streams or overlays can affect pixel detection routines.
 
 ### ✔️ First-Time Setup Recommendation
-Before leaving the macro completely unattended for extended windows, execute each mode independently for a few test cycles. Monitor structural execution loops, check for screen indexing alignment mismatches, and adjust script delay flags if your hardware profile requires longer execution windows.
+Before leaving the macro completely unattended for extended windows, execute each mode independently for a few test cycles. Monitor structural execution loops, check for screen indexing alignment mismatches, and adjust the execution speed multiplier slider if your hardware profile requires expanded safety cushions.
 
 ---
 
 ## 🛠️ Customization Encouraged
 
-Users are strongly encouraged to dive into the source architecture to adapt layout functions. You can easily tweak color bounds inside `WaitForMenuRelative`, update navigation key mappings to accommodate personalized button assignments, customize window parameters, or inject customized performance logic paths to tailor it to your setup.
+Users are strongly encouraged to dive into the source architecture to adapt layout functions. You can easily tweak color bounds inside `WaitForMenuRelative`, update navigation key mappings to accommodate personalized button assignments, customize window parameters, adjust the global UI updater parameters, or inject customized performance logic paths to tailor it to your setup.
 
 ---
 
 ## 🙏 Credits
 
 * **Base Script:** Original automation foundation and sequence structures created by [6ftfish](https://github.com/6ftfish/Forza_Horizon_6_Skill_Point_Macro).
-* **Modifications:** This version includes a full GUI overhaul, pixel check safety additions, data models, layout optimizations, and structured script architecture.
+* **Modifications:** This version includes a full GUI overhaul, pixel check safety additions, data models, speed controls, multi-profile tracking structures, layout optimizations, and structured script architecture.
 * **EventLab & Tuning:** Custom race layout and vehicle mechanical configuration parameters provided by u/Ok-Pin-5704 on [Reddit](https://www.reddit.com/r/EventlabSubmissions/comments/1twfgk0/960_skill_point_race).
 
 ---
