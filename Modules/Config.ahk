@@ -1,6 +1,6 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro		║
-; ║        Cyber Noir Edition v1.4.0        ║
+; ║        Cyber Noir Edition v1.5.0        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
@@ -34,42 +34,18 @@ global cHighlight     := "39FF14"
 global cIdle          := "7A4A60"
 global cTextDim       := "7A4A60"
 
-global SectorCount    := 0
-global PointsCount    := 0
-global CarCount       := 0
-global UnlockCount    := 0
-global SWheelCount    := 0
-global WheelCount     := 0
-global CreditCount    := 0
-
 global TotalRunSeconds  := 0
 global RaceRunSeconds   := 0
 global BuyRunSeconds    := 0
 global UnlockRunSeconds := 0
-
-global PointsCount_UI   := ""
-global CarCount_UI      := ""
-global SWheelCount_UI   := ""
-global WheelCount_UI    := ""
-global CreditCount_UI   := ""
-global CodeTune_UI      := ""
-global TotalRunTime_UI  := ""
-global RaceRunTime_UI   := ""
-global BuyRunTime_UI    := ""
-global UnlockRunTime_UI := ""
-global CarSelect_UI     := ""
-global CarsLabel_UI     := ""
-global PointsLabel_UI   := ""
-global TimeLabel_UI     := ""
-global SectorLabel_UI   := ""
-global PixelCheck_UI    := ""
-global PremiumCheck_UI  := ""
-global CodeSelect_UI    := ""
-global SectorCount_UI   := ""
+global SpinRunSeconds   := 0
 
 global PointsTotal      := 0
 global PointsGain       := 0
 global TimeTotal        := 0
+
+global SpinMode         := "KEEP"
+global UserTier         := "STANDARD"
 
 ; ══════════════════════════════════════════════
 ;  BALANCING PRESETS & TUNING METRICS

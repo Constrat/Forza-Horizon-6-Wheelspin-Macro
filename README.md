@@ -68,6 +68,9 @@ Before installing, ensure your system meets the following layout and control req
 ## ✨ Key Features
 
 * 🎨 Custom GUI layout with dark/light theme options on-the-fly.
+* 🔘 **Sleek Tier Toggle Buttons:** Features dedicated **STANDARD** and **PREMIUM** buttons to quickly toggle your game edition layout instead of clunky old checkboxes.
+* 🛞 **Automated Wheelspin Module:** Built-in automation loop that handles both regular and Super Wheelspins, automatically detecting the spin type, skipping animations, and tracking totals.
+* 🔄 **Keep or Sell Choice:** Integrated UI toggles for **KEEP** and **SELL** rules, allowing you to choose whether the macro automatically sells duplicate prize cars for credits or saves them to your garage.
 * 👁️ **Optical Character Recognition (OCR):** Integrates `OCR.ahk` alongside specialized functions to scan screen regions, parse text strings, and extract real-time numeric data via regex matching.
 * 🔒 **Targeted Window Routing:** Enforces game-scoped hotkeys and leverages background-compatible arrays mapped directly and exclusively to `ForzaHorizon6.exe`.
 * ⏱️ **Execution Speed Control:** Integrated a Delay Multiplier slider supporting 0.25x to 2.5x scaling to dynamically adjust input delays and pixel detection timeouts based on system performance.
@@ -76,8 +79,8 @@ Before installing, ensure your system meets the following layout and control req
 * 🏁 **Bespoke Race Logic:** Tailored acceleration/braking intervals and an automated 50-race continuation mechanic optimized specifically for advanced profiles like AMMAGEDON.
 * ⌨️ **Hardware-Level Input:** Employs low-level physical scan codes inside `PressKey()` for absolute reliability, minimizing input drops and bypassing focus errors.
 * 👁️ **Pixel-Aware Engine:** Dynamic menu loading synchronization checks to systematically mitigate desync issues.
-* 💎 **Premium User Support:** Adapts purchasing pathways contextually for Premium players.
-* 📊 Real-time session runtime telemetry and calculated progress logs.
+* 📦 **System Tray Icon:** Features a dedicated application icon in the system tray for seamless background minimization and tool management.
+* 📊 Real-time session runtime telemetry, progress calculations, and live wheelspin tracking rows (*Wheelspins Opened*, *Wheelspins Left*, and *Spin Time Running*).
 * 🏁 Automated race loop execution with structural timing cushions and recovery checks.
 * 🚗 Fast-navigation car purchasing routines.
 * 🛞 Automated wheelspin and cash reward perk unlocking.
@@ -100,7 +103,7 @@ Runs only the race automation process.
 Runs only the vehicle purchasing process.
 * **Pre-Flight Resource Verification:** Instantly checks via OCR whether current skill points are sufficient to purchase the chosen vehicle before initializing.
 * **Resource-Driven Budgets:** Dynamically calculates the maximum number of cars to process based strictly on active skill points, triggering an immediate early-exit safeguard if resources run thin.
-* Dynamically shifts execution pathways based on the status of your checkbox toggle.
+* Dynamically shifts execution pathways based on whether the **STANDARD** or **PREMIUM** tier toggle button is engaged.
 
 ### 🛞 Unlock Mode (Hotkey `]`)
 Runs only the reward unlocking process.
@@ -120,7 +123,7 @@ Combines all processes into a single continuous workflow (Race → Buy → Unloc
 Controls in-game navigation via rock-solid hardware scan codes, routing inputs to background targets. Features responsive color-sampling verification layers (fully scaled by the selected speed multiplier) to ensure menus are rendered before issuing subsequent commands.
 
 ### 📊 Telemetry System
-Actively tracks total running time, loop-specific session times, total acquired cars, and granular sector updates with a clean, unified presentation.
+Actively tracks total running time, loop-specific session times, total acquired cars, open/remaining wheelspins, and granular sector updates with a clean, unified presentation.
 
 ### 🧮 Progress Estimation
 Uses optimized deterministic internal functions to calculate real-world session metrics and completion windows based on fixed empirical loading baselines instead of volatile runtime estimates.
@@ -137,7 +140,7 @@ You can choose which vehicle the macro purchases and unlocks perks for via the G
 | **Lamborghini Revuelto (2024)** | 365,000 CR | 346,750 CR | 1x Super Wheelspin + 3x Regular Wheelspins | 39 Points | **Max Yield:** Dumps heavy credits to maximize total wheelspin volume as fast as possible. |
 | **Dodge Viper GTS ACR (1999)**\* | 68,000 CR | 64,600 CR | 150,000 CR | 30 Points | **Credit Flipping:** Converts Skill Points back into raw cash for a quick return or a near-full vehicle refund. |
 
-> \* **Note on Dodge Viper GTS ACR:** If you are running a premium account that adjusts this vehicle's placement menu position, ensure you check the **Premium Check** box on the GUI to safely adjust menu tracking layouts.
+> \* **Note on Dodge Viper GTS ACR:** If you are running a premium account that adjusts this vehicle's placement menu position, ensure you click the **PREMIUM** button layout on the UI to safely adjust menu tracking layers.
 
 ---
 

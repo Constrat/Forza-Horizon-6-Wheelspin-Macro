@@ -1,53 +1,53 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro		║
-; ║        Cyber Noir Edition v1.4.0        ║
+; ║        Cyber Noir Edition v1.5.0        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
 
+global BuyCount := 0
+global SkillPtsScanSuccess := false
+
 StartBuy() {
-    global ActiveMode, MasterMode, StatusText, cActive, CarCount, BuyRunSeconds
+    global ActiveMode, MasterMode, StatusText, cActive, BuyCount, BuyRunSeconds
     global BuyRunTime_UI, CarCount_UI, CarsLabel_UI, SkillPtsWant_In, CarCount_In, SkillPtsCount_In, SelectedCarPoint
 
-    StartIndicators()
     if !ToggleMode("Buy") {
         StatusText.Value := "⬤  Stopping..."
         StatusText.SetFont("cFFB347")
     }
-
-    if (ActiveMode = "Buy") {
-        CarCount            := 0
+    
+    StartIndicators()
+    if (ActiveMode = "Buy" && CarCount_In.Value > 0) {
+        
+        BuyCount            := 0
         BuyRunSeconds       := 0
+        SkillPtsScanSuccess := false
         CarCount_In.Value   := Floor(SkillPtsCount_In.Value / SelectedCarPoint)
         CarsLabel_UI.Value  := "Recommended Car Purchase  —  " CarCount_In.Value
         CarCount_UI.Value   := "🚗   Car Purchased   —   0"
         BuyRunTime_UI.Value := "🕓   Buy Time Running   —   00:00"
-        StatusText.Value    := "⬤  Running..."
-        StatusText.SetFont("c" cActive)
+
+        CarCount_UI.SetFont("c" cHighlight)
+        BuyRunTime_UI.SetFont("c" cHighlight)
         
+        SetTimer(BuyTimerTick, 1000)
         BuyLoop()
     }
     ResetIndicators()
 }
 
 BuyLoop() {
-    global ActiveMode, MasterMode, MasterStart
+    global ActiveMode, MasterMode, MasterStart, UserTier, SkillPtsScanSuccess
     global cActive, cHighlight, cIdle
-    global CarCount, CarCount_In, SelectedCar, CarCount_UI, BuyRunTime_UI
+    global BuyCount, CarCount_In, SelectedCar, CarCount_UI, BuyRunTime_UI, SkillPtsCount_In
 
     ; Local helper to cleanly check if the macro should stop
     CheckAbort() => (ActiveMode != "Buy" || (!MasterMode && MasterStart))
 
     While (ActiveMode = "Buy") {
-
-        CarCount_UI.SetFont("c" cHighlight)
-        BuyRunTime_UI.SetFont("c" cHighlight)
-
-        SetTimer(BuyTimerTick, 1000)
-
-        CarCount_In.Value := Floor(SkillPtsCount_In.Value / SelectedCarPoint)
         
-        if(!MasterMode) {
+        if(!MasterMode && !SkillPtsScanSuccess && SkillPtsCount_In.Value = 0) {
             Process("Checking Available Skill Points..")
             PressKey("PgDn") ; Navigate to Buy & Sell Menu
             PressKey("PgDn") ; Navigate to Cars Menu
@@ -58,7 +58,12 @@ BuyLoop() {
             PressKey("Enter") ; Select Car Mastery
             
             Process("Scanning Skill Points...")
-            points := SkillPtsScan(0.331, 0.851, 0.054, 0.033)
+            points := SkillPtsScan(0.331, 0.851, 0.054, 0.033) 
+
+            if points != -1
+                SkillPtsScanSuccess := true
+            else
+                SkillPtsScanSuccess := false
             
             Process("Returning to Campaign Menu...")
             PressKey("Esc", 1500) ; Navigate to Upgrades Menu
@@ -69,6 +74,8 @@ BuyLoop() {
             if points < SelectedCarPoint
                 break
         }
+
+        CarCount_In.Value := Floor(SkillPtsCount_In.Value / SelectedCarPoint)
 
         Process("Navigating Journal...")
         Loop 3
@@ -107,7 +114,7 @@ BuyLoop() {
                 Loop 2
                     PressKey("Right", 50)
                 PressKey("Enter") ;Select Dodge
-                if !PremiumCheck_UI
+                if UserTier = "STANDARD"
                     PressKey("Down")
                 else {
                     PressKey("Down")
@@ -120,15 +127,15 @@ BuyLoop() {
 
         ; ── Buying Car ───────────────
         Process("Buying " SelectedCar "...")
-        While (CarCount < CarCount_In.Value) {
+        While (BuyCount < CarCount_In.Value) {
             PressKey("Space") ; Purchase Car
             PressKey("Down") ; Navigate to Yes
             PressKey("Enter") ; Select Yes (Car Collection)
             PressKey("Enter") ; Select Yes (Buy Car)
             PressKey("Enter") ; Select Yes (Ok)
             
-            CarCount++
-            CarCount_UI.Value := "🚗   Car Purchased   —   " CarCount
+            BuyCount++
+            CarCount_UI.Value := "🚗   Car Purchased   —   " BuyCount
         }
 
         if CheckAbort()
@@ -140,7 +147,7 @@ BuyLoop() {
             PressKey("Esc") ; Navigate to Home Menu
         Sleep(500)
         PressKey("Up") ; Navigate to Drive
-
+        
         break
     }
 }

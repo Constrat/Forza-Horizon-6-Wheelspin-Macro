@@ -1,22 +1,25 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro		║
-; ║        Cyber Noir Edition v1.4.0        ║
+; ║        Cyber Noir Edition v1.5.0        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
 
+global PointsCount    := 0
+global SectorCount    := 0
+
 StartRace() {
     global ActiveMode, StatusText, cActive, SectorCount, TotalRunSeconds, RaceRunSeconds
-    global PointsCount, PointsGain, PointsTotal, RaceRunTime_UI, PointsCount_UI, SectorCount_UI
+    global PointsCount, PointsGain, RaceRunTime_UI, PointsCount_UI, SectorCount_UI
     global SkillPtsCount_In, SkillPtsWant_In, CarCount_In
 
-    StartIndicators()
     if !ToggleMode("Race") {
         StatusText.Value := "⬤  Stopping..."
         StatusText.SetFont("cFFB347")
     }
-
-    if (ActiveMode = "Race") {
+    
+    StartIndicators()
+    if (ActiveMode = "Race" && SkillPtsWant_In.Value > 0) {
         SectorCount          := 0
         TotalRunSeconds      := 0
         RaceRunSeconds       := 0
@@ -25,6 +28,8 @@ StartRace() {
         PointsCount_UI.Value := "💡   Est. Skill Points Gained   —   0"
         RaceRunTime_UI.Value := "🕓   Race Time Running   —   00:00"
 
+        RaceRunTime_UI.SetFont("c" cHighlight)
+        SetTimer(RaceTimerTick, 1000)
         RaceLoop()
     }
     ResetIndicators()
@@ -34,7 +39,7 @@ RaceLoop() {
     global ActiveMode, MasterMode, MasterStart, RaceStart
     global cActive, cHighlight, cIdle
     global SectorCount, PointsCount_UI, CarCount_UI, RaceRunTime_UI, PixelCheck_UI, SectorCount_UI
-    global AveragePoints, Maxpoints, PointsTotal, PointsGain, PointsCount, RaceRunSeconds
+    global AveragePoints, Maxpoints, PointsGain, PointsCount, RaceRunSeconds
     global CodeEventLab_UI, CodeEventLab, CodeSelect_UI
 
     ; Local helper to cleanly check if the macro should stop
@@ -42,9 +47,6 @@ RaceLoop() {
 
     While (ActiveMode = "Race") {
         RaceStart := true
-
-        RaceRunTime_UI.SetFont("c" cHighlight)
-        SetTimer(RaceTimerTick, 1000)
         
         Sleep(1000)
         PressKey("Esc") ; Return to Free Roam
@@ -59,14 +61,14 @@ RaceLoop() {
             
         Process("Navigating Menu...")
         PressKey("Esc", 1000) ; Open Menu
-        PressKey("PgDn", 50) ; Naigate to Cars Menu
+        PressKey("PgDn", 100) ; Naigate to Cars Menu
 
         Process("Scanning Skill Points")
-        SkillPtsScan(0.284, 0.717, 0.145, 0.035)
+        SkillPtsRaceScan(0.284, 0.717, 0.145, 0.035)
 
         Process("Navigating to EventLab Menu")
         Loop 2
-            PressKey("PgDn", 50) ; Navigate to EventLab Menu
+            PressKey("PgDn", 100) ; Navigate to EventLab Menu
         PressKey("PgDn")
 
         Process("Opening EventLab Menu...")
@@ -237,7 +239,7 @@ RaceLoop() {
         PressKey("PgDn") ; Navigate to Cars Menu
 
         Process("Scanning Skill Points")
-        SkillPtsScan(0.284, 0.717, 0.145, 0.035)
+        SkillPtsRaceScan(0.284, 0.717, 0.145, 0.035)
 
         PressKey("PgDn") ; Navigate to My Horizon Menu
         PressKey("Enter") ; Select Return Home

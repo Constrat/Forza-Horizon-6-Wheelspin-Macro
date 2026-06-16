@@ -1,11 +1,32 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro		║
-; ║        Cyber Noir Edition v1.4.0        ║
+; ║        Cyber Noir Edition v1.5.0        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
 
-#Include Engine.ahk
+global PointsCount_UI   := ""
+global CarCount_UI      := ""
+global SWheelCount_UI   := ""
+global WheelCount_UI    := ""
+global CreditCount_UI   := ""
+global CodeTune_UI      := ""
+global TotalRunTime_UI  := ""
+global RaceRunTime_UI   := ""
+global BuyRunTime_UI    := ""
+global UnlockRunTime_UI := ""
+global CarSelect_UI     := ""
+global CarsLabel_UI     := ""
+global PointsLabel_UI   := ""
+global TimeLabel_UI     := ""
+global SectorLabel_UI   := ""
+global PixelCheck_UI    := ""
+global PremiumCheck_UI  := ""
+global CodeSelect_UI    := ""
+global SectorCount_UI   := ""
+global SpinRunTime_UI   := ""
+global SpinOpenCount_UI := ""
+global SpinLeftCount_UI := ""
 
 ; ══════════════════════════════════════════════
 ;  PALETTE COMPOSER
@@ -34,6 +55,8 @@ GetPalette() {
         p["cTextDim"]   := "6B7C93"
         p["footer"]     := "1F2A3A"
         p["header"]     := "4289B6"
+        p["activeBg"]    := "4B5563"
+        p["inactiveBg"]  := "1F2937"
     } else {
         p["bg"]       := "F5F7FA"
         p["panel"]    := "E8EEF5"
@@ -54,6 +77,8 @@ GetPalette() {
         p["cTextDim"]   := "4B5B73"
         p["footer"]     := "C9D6E5"
         p["header"]     := "4289B6"
+        p["activeBg"]    := "BFDBFE" ; Soft pastel blue
+        p["inactiveBg"]  := "F1F5F9" ; Clean slate off-white
     }
     return p
 }
@@ -62,12 +87,12 @@ GetPalette() {
 ;  INTERFACE GENERATION ENGINE
 ; ══════════════════════════════════════════════
 BuildGui(savedVals := "") {
-    global MyGui, StatusText, PointsCount_UI, CarCount_UI, SWheelCount_UI, WheelCount_UI, CreditCount_UI
+    global MyGui, StatusText, PointsCount_UI, CarCount_UI, SWheelCount_UI, WheelCount_UI, CreditCount_UI, SpinRunTime_UI, SpinOpenCount_UI, SpinLeftCount_UI
     global TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, UnlockRunTime_UI, SectorCount_UI
     global PointsLabel_UI, TimeLabel_UI, CarsLabel_UI, CodeSelect_UI, DelaySlider_UI, SpeedLabel_UI, SectorLabel_UI
     global Key_UI, Process_UI, CodeTune_UI, CodeEventLab_UI, CarSelect_UI, PremiumCheck_UI
     global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, LoopCount_In, AveragePoints, MaxPoints, PointsTotal, PointsGain, TimeTotal
-    global ActiveMode, DarkMode, cActive, cHighlight, cIdle, cTextDim, cPaused, cStat, SectorCount, CodeEventLab, CodeTune
+    global ActiveMode, DarkMode, cActive, cHighlight, cIdle, cTextDim, cPaused, cStat, CodeEventLab, CodeTune, SpinMode, UserTier
 
     p := GetPalette()
     cActive    := p["cActive"]
@@ -111,8 +136,28 @@ BuildGui(savedVals := "") {
     SetFixedFont(MyGui, 9, "bold")
     CarSelect_UI := MyGui.Add("DropDownList", "x55 y+10 w160 Center Choose1", ["Subaru Impreza 22B-STi", "Lamborghini Revuelto", "Dodge Viper GTS ACR"])
    
-    SetFixedFont(MyGui, 9, "norm c" p["text"])
-    PremiumCheck_UI := MyGui.Add("Checkbox", "y+8 0x200", "  PREMIUM    🜲")
+    SetFixedFont(MyGui, 9, "bold", "Semibold")
+    StandardBtn := MyGui.Add("Text", "x14 y+5 w119 h24 Center 0x200 Background" p["activeBg"] " c" p["text"], "😎   STANDARD")
+    StandardBtn.OnEvent("Click", (*) => SetUserTier("STANDARD"))
+
+    PremiumBtn := MyGui.Add("Text", "x137 yp w119 h24 Center 0x200 Background" p["inactiveBg"] " c" p["text"], "🜲   PREMIUM")
+    PremiumBtn.OnEvent("Click", (*) => SetUserTier("PREMIUM"))
+
+    SetUserTier(tier) {
+        global UserTier
+        UserTier := tier
+        
+        if (tier == "STANDARD") {
+            StandardBtn.Opt("Background" p["activeBg"])
+            PremiumBtn.Opt("Background" p["inactiveBg"])
+        } else if (tier == "PREMIUM"){
+            StandardBtn.Opt("Background" p["inactiveBg"])
+            PremiumBtn.Opt("Background" p["activeBg"])
+        }
+        ; Force the UI to redraw the new colors immediately
+        StandardBtn.Redraw()
+        PremiumBtn.Redraw()
+    }
 
     ; ── Calculations & Targets ────────────────
     SetFixedFont(MyGui, 9, "bold")
@@ -163,29 +208,60 @@ BuildGui(savedVals := "") {
     CreditCount_UI   := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "💲   Credits   —   0 CR")
 
     ; ── Action Buttons ────────────────────────
-    MyGui.Add("Text", "x14 y+10 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    ;MyGui.Add("Text", "x14 y+10 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     SetFixedFont(MyGui, 9, "bold", "Semibold")
-    RaceBtn := MyGui.Add("Text", "x14 y+6 w242 h36 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🏁   RACE   —   \")
+    RaceBtn := MyGui.Add("Text", "x14 y+16 w242 h32 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🏁   RACE      \")
     RaceBtn.OnEvent("Click", (*) => StartRace())
 
-    BuyBtn := MyGui.Add("Text", "x14 y+6 w119 h36 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🚗   BUY  —   [")
+    BuyBtn := MyGui.Add("Text", "x14 y+6 w119 h32 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🚗   BUY     [")
     BuyBtn.OnEvent("Click", (*) => StartBuy())
 
-    UnlockBtn := MyGui.Add("Text", "x137 yp w119 h36 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🛞   UNLOCK  —   ]")
+    UnlockBtn := MyGui.Add("Text", "x137 yp w119 h32 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🛞   UNLOCK     ]")
     UnlockBtn.OnEvent("Click", (*) => StartUnlock())
 
-    AllBtn := MyGui.Add("Text", "x14 y+6 w242 h36 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "⟲   INIT SEQUENCE   —   /")
+    AllBtn := MyGui.Add("Text", "x14 y+6 w242 h32 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "⟲   INIT SEQUENCE     /")
     AllBtn.OnEvent("Click", (*) => ToggleAll())
 
-    themeLabel := DarkMode ? "☀   Switch to Light Mode" : "🌙   Switch to Dark Mode"
-    SetFixedFont(MyGui, 8, "norm")
-    ThemeBtn := MyGui.Add("Text", "x14 y+7 w242 h26 Center 0x200 Background" p["btnBg2"] " c" p["btnText2"], themeLabel)
-    ThemeBtn.OnEvent("Click", (*) => ToggleTheme())
+    MyGui.Add("Text", "x14 y+6 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+    SetFixedFont(MyGui, 9, "norm", "Light")
+    SpinRunTime_UI := MyGui.Add("Text", "x0 y+5 w270 Center BackgroundTrans c" p["cIdle"], "🕓   Spin Time Running   —   00:00")
+    SpinOpenCount_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🎊   Wheelspin Opened  —   0")
+    SpinLeftCount_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "🎁   Wheelspin Left   —   0")
+    
+    SetFixedFont(MyGui, 9, "bold", "Semibold")
+    KeepBtn := MyGui.Add("Text", "x14 y+16 w119 h24 Center 0x200 Background" p["activeBg"] " c" p["text"], "💾   KEEP")
+    KeepBtn.OnEvent("Click", (*) => SetSpinMode("KEEP"))
+
+    SellBtn := MyGui.Add("Text", "x137 yp w119 h24 Center 0x200 Background" p["inactiveBg"] " c" p["text"], "🏷️   SELL")
+    SellBtn.OnEvent("Click", (*) => SetSpinMode("SELL"))
+
+    SetFixedFont(MyGui, 9, "bold", "Semibold")
+    SpinBtn := MyGui.Add("Text", "x14 y+6 w242 h32 Center 0x200 Background" p["btnBg"] " c" p["btnText"], "🎲   SPIN     =")
+    SpinBtn.OnEvent("Click", (*) => StartSpin())
+
+    SetSpinMode(mode) {
+        global SpinMode
+        SpinMode := mode
+        
+        if (mode == "KEEP") {
+            KeepBtn.Opt("Background" p["activeBg"])
+            SellBtn.Opt("Background" p["inactiveBg"])
+        } else if (mode == "SELL"){
+            KeepBtn.Opt("Background" p["inactiveBg"])
+            SellBtn.Opt("Background" p["activeBg"])
+        }
+        ; Force the UI to redraw the new colors immediately
+        KeepBtn.Redraw()
+        SellBtn.Redraw()
+    }
+
+    MyGui.Add("Text", "x14 y+6 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     ; ── Footer Codes ──────────────────────────
     SetFixedFont(MyGui, 9, "norm")
-    SpeedLabel_UI := MyGui.Add("Text", "x0 y+20 w270 Center", "Delay Multiplier: 1x")
+    SpeedLabel_UI := MyGui.Add("Text", "x0 y+10 w270 Center c" p["text"], "Delay Multiplier: 1x")
     DelaySlider_UI := MyGui.Add("Slider", "x35 y+5 w200 Range1-7", 4) 
     DelaySlider_UI.OnEvent("Change", UpdateSpeed)
 
@@ -198,27 +274,28 @@ BuildGui(savedVals := "") {
     CodeEventLab_UI := MyGui.Add("Text", "x0 y+0 w270 Center BackgroundTrans c" p["cIdle"], "EventLab Race Code")
 
     CodeTune_UI.OnEvent("Click", (*) => (
-        A_Clipboard := CodeSelect_UI.Text = "LIQUIDPOTATO" ?  "293391902" : "206657706",
+        A_Clipboard := CodeTune,
         ToolTip("Subaru 22B Tune Code Copied! " CodeTune),
         SetTimer(() => ToolTip(), -2000)
     ))
 
     CodeEventLab_UI.OnEvent("Click", (*) => (
-        A_Clipboard := CodeSelect_UI.Text = "LIQUIDPOTATO" ? "124198343" : "113938786",
+        A_Clipboard := CodeEventLab,
         ToolTip("EventLab Race Code Copied! " CodeEventLab),
         SetTimer(() => ToolTip(), -2000)
     ))
 
-    MyGui.Add("Link","xm+210 y+5 Right", '<a href="https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/tag/v1.4.0">v1.4.0</a>')
+    themeLabel := DarkMode ? "☀" : "🌙"
+    SetFixedFont(MyGui, 8, "norm")
+    ThemeBtn := MyGui.Add("Text", "x14 yp+5 w30 h26 Center 0x200 Background" p["btnBg2"] " c" p["btnText2"], themeLabel)
+    ThemeBtn.OnEvent("Click", (*) => ToggleTheme())
+
+    MyGui.Add("Link","xm+210 yp+12 Right", '<a href="https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/tag/v1.5.0">v1.5.0</a>')
 
 ; ── Positioning ──────────────────────────
     MyGui.Add("Text", "x0 y+5 w270 h1 BackgroundTrans c" p["footer"], "")
     MyGui.OnEvent("Close", (*) => ExitApp())
     MyGui.Show("w270 Hide")
-
-    MyGui.GetClientPos(,, &guiWidth)
-    PremiumCheck_UI.GetPos(,, &PremWidth)
-    PremiumCheck_UI.Move((guiWidth / 2) - (PremWidth / 2))
 
     ; 1. Get the boundaries of the PRIMARY monitor (respects taskbars and DPI safely)
     ; If you want it on the ACTIVE window's monitor instead, use: MonitorGetWorkArea(MonitorGetFromWindow(), &Left, &Top, &Right, &Bottom)
@@ -258,10 +335,10 @@ SetFixedFont(guiObject, pointSize, options := "", fontName := "Segoe UI") {
 
     Switch fontName
     {
-        Case "Light":    fontName := "Segoe UI Light"
-        Case "Semibold": fontName := "Segoe UI Semibold"
-        Case "Emoji": fontName := "Segoe UI Emoji"
-        Default:         fontName := "Segoe UI"
+        Case "Light":       fontName := "Segoe UI Light"
+        Case "Semibold":    fontName := "Segoe UI Semibold"
+        Case "Emoji":       fontName := "Segoe UI Emoji"
+        Default:            fontName := "Segoe UI"
     }
 
     ; 1. Calculate the anti-scaling math for the size

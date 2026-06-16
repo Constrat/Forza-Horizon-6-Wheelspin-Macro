@@ -1,21 +1,26 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro		║
-; ║        Cyber Noir Edition v1.4.0        ║
+; ║        Cyber Noir Edition v1.5.0        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
 
-StartUnlock() {
-    global ActiveMode, MasterMode, StatusText, cActive, SWheelCount, WheelCount, CreditCount, UnlockCount, UnlockRunSeconds, PointsTotal
-    global SWheelCount_UI, WheelCount_UI, CreditCount_UI, UnlockRunTime_UI, CarsLabel_UI, SkillPtsWant_In, CarCount_In, SkillPtsCount_In, SelectedCarPoint
+global UnlockCount    := 0
+global SWheelCount    := 0
+global WheelCount     := 0
+global CreditCount    := 0
 
-    StartIndicators()
+StartUnlock() {
+    global ActiveMode, StatusText, CreditCount, UnlockCount, UnlockRunSeconds
+    global SWheelCount_UI, WheelCount_UI, CreditCount_UI, UnlockRunTime_UI, CarsLabel_UI, CarCount_In, SkillPtsCount_In, SelectedCarPoint
+
     if !ToggleMode("Unlock") {
         StatusText.Value := "⬤  Stopping..."
         StatusText.SetFont("cFFB347")
     }
-
-    if (ActiveMode = "Unlock") {
+    
+    StartIndicators()
+    if (ActiveMode = "Unlock" && CarCount_In.Value > 0) {
         UnlockCount            := 0
         UnlockRunSeconds       := 0
         CarCount_In.Value      := Floor(SkillPtsCount_In.Value / SelectedCarPoint)
@@ -24,26 +29,24 @@ StartUnlock() {
         WheelCount_UI.Value    := "🛞   Wheelspin   —   0"
         CreditCount_UI.Value   := "💲   Credits   —   0 CR"
         UnlockRunTime_UI.Value := "🕓   Unlock Time Running   —   00:00"
-        StatusText.Value       := "⬤  Running..."
-        StatusText.SetFont("c" cActive)
-        
+
+        UnlockRunTime_UI.SetFont("c" cHighlight)
+        SetTimer(UnlockTimerTick, 1000)
         UnlockLoop()
     }
     ResetIndicators()
 }
 
 UnlockLoop() {
-    global ActiveMode, MasterMode, CarCount_In
+    global ActiveMode, MasterMode, SkillPtsScanSuccess
     global cActive, cHighlight, cIdle
-    global SWheelCount, SWheelCount_UI, WheelCount, WheelCount_UI, CreditCount, CreditCount_UI, UnlockRunTime_UI, UnlockCount, SelectedCar, SelectedCarPoint, SkillPtsCount_In
+    global SWheelCount, SWheelCount_UI, WheelCount_UI, CreditCount_UI, UnlockRunTime_UI
+    global UnlockCount, WheelCount, CreditCount, SelectedCar, SelectedCarPoint, SkillPtsCount_In, CarCount_In
 
     ; 1. Helper function to clean up the repetitive break checks
     CheckAbort() => (ActiveMode != "Unlock" || (!MasterMode && MasterStart))
 
     While (ActiveMode = "Unlock") {
-        
-        ; 2. Initialize UI 
-        UnlockRunTime_UI.SetFont("c" cHighlight)
 
         Switch SelectedCar {
             Case "Subaru Impreza 22B-STi":
@@ -54,16 +57,12 @@ UnlockLoop() {
             Case "Dodge Viper GTS ACR":
                 CreditCount_UI.SetFont("c" cHighlight)
         }
-    
-        SetTimer(UnlockTimerTick, 1000)
-
-        CarCount_In.Value := Floor(SkillPtsCount_In.Value / SelectedCarPoint)
 
         ; 3. Initial Navigation
         Process("Navigating Home...")
         PressKey("PgDn") ; Navigate to Buy & Sell Menu
 
-        if(!MasterMode) {
+        if(!MasterMode && !SkillPtsScanSuccess && SkillPtsCount_In.Value = 0) {
             Process("Checking Available Skill Points..")
             PressKey("PgDn") ; Navigate to Cars Menu
             PressKey("Down", 50) ; Navigate to Upgrades & Tuning
@@ -73,7 +72,12 @@ UnlockLoop() {
             PressKey("Enter") ; Select Car Mastery
             
             Process("Scanning Skill Points...")
+
             points := SkillPtsScan(0.331, 0.851, 0.054, 0.033)
+            if points != -1
+                SkillPtsScanSuccess := true
+            else
+                SkillPtsScanSuccess := false
 
             PressKey("Esc", 1500) ; Navigate to Upgrades Menu
             PressKey("Esc", 1500) ; Navigate to Cars Menu
@@ -84,6 +88,8 @@ UnlockLoop() {
                 break
             }
         }
+        
+        CarCount_In.Value := Floor(SkillPtsCount_In.Value / SelectedCarPoint)
         
         PressKey("Down", 50) ; Navigate to Auction House
         if CheckAbort()
@@ -129,7 +135,7 @@ UnlockLoop() {
                 PressKey("Down", 50) ; Navigate to Car Mastery
             PressKey("Enter") ; Select Car Mastery
 
-            if !WaitForMenuRelative("Opening Car Mastery...", 0.176, 0.545, "0xFFFFFF", "", 5000, 100) {
+            if !WaitForMenuRelative("Opening Car Mastery...", 0.176, 0.545, "0xFFFFFF", "", 3000, 100) {
                 Process("Sync Error: Car Mastery menu failed to load!")
                 break
             }
@@ -184,7 +190,7 @@ UnlockLoop() {
                     CreditCount_UI.Value := "💲   Credits   —   " (UnlockCount * 85400) " CR"
             }
 
-            SkillPtsCount_In.Value -=  SelectedCarPoint
+            ;SkillPtsCount_In.Value -=  SelectedCarPoint
     
             if CheckAbort()
                 break

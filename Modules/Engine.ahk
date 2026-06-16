@@ -1,14 +1,9 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro		║
-; ║        Cyber Noir Edition v1.4.0        ║
+; ║        Cyber Noir Edition v1.5.0        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
-
-#Include UI.ahk
-#Include Task_Race.ahk
-#Include Task_Buy.ahk
-#Include Task_Unlock.ahk
 
 ; ══════════════════════════════════════════════
 ;  LOOP COORDINATION MECHANICS
@@ -96,8 +91,8 @@ SmartCountdown(TotalSec, UIEl, ActiveText) {
 ; ══════════════════════════════════════════════
 
 StartIndicators() {
-    global StatusText, Process_UI, Key_UI, TotalRunTime_UI
-    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI, PremiumCheck_UI
+    global StatusText, Process_UI, Key_UI, TotalRunTime_UI, ActiveMode
+    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI
 
     StatusText.Value 	:= "⬤  Running..."
     StatusText.SetFont("c" cActive)
@@ -106,14 +101,20 @@ StartIndicators() {
     Key_UI.SetFont("c" cHighlight)
     TotalRunTime_UI.SetFont("c" cHighlight)
 
-    SkillPtsCount_In.Enabled := false
-    SkillPtsWant_In.Enabled := false
-    CarCount_In.Enabled := false
-    CarSelect_UI.Enabled := false
-    PremiumCheck_UI.Enabled := false
-    DelaySlider_UI.Enabled := false
+    if (ActiveMode = "Spin") {
+        SkillPtsCount_In.Enabled := false
+        SkillPtsWant_In.Enabled := false
+        CarCount_In.Enabled := false
+        CarSelect_UI.Enabled := false
+        DelaySlider_UI.Enabled := false
+        SkillPtsCount_In.Enabled := false
+        SkillPtsWant_In.Enabled := false
+        CarCount_In.Enabled := false
+        CarSelect_UI.Enabled := false
+        DelaySlider_UI.Enabled := false
+        LoopCount_In.Enabled := false
+    }
     CodeSelect_UI.Enabled := false
-    LoopCount_In.Enabled := false
 
     SetTimer(TotalTimerTick, 1000)
 }
@@ -121,11 +122,12 @@ StartIndicators() {
 ResetIndicators() {
     global Key_UI, Process_UI, StatusText, cIdle, cTextDim
     global TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, UnlockRunTime_UI, SectorCount, ActiveMode, MasterMode
-    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI, PremiumCheck_UI
+    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI
 
     SetTimer(RaceTimerTick, 0)
     SetTimer(BuyTimerTick, 0)
     SetTimer(UnlockTimerTick, 0)
+    SetTimer(SpinTimerTick, 0)
     if (!MasterMode) {
         SetTimer(TotalTimerTick, 0)
     }
@@ -145,6 +147,9 @@ ResetIndicators() {
     SWheelCount_UI.SetFont("c" cIdle)
     WheelCount_UI.SetFont("c" cIdle)
     CreditCount_UI.SetFont("c" cIdle)
+    SpinRunTime_UI.SetFont("c" cIdle)
+    SpinOpenCount_UI.SetFont("c" cIdle)
+    SpinLeftCount_UI.SetFont("c" cIdle)
     StatusText.Value := "⬤  Stopped"
     StatusText.SetFont("c" cTextDim)
     
@@ -152,11 +157,9 @@ ResetIndicators() {
     SkillPtsWant_In.Enabled := true
     CarCount_In.Enabled := true
     CarSelect_UI.Enabled := true
-    PremiumCheck_UI.Enabled := true
     DelaySlider_UI.Enabled := true
     CodeSelect_UI.Enabled := true
     LoopCount_In.Enabled := true
-
 }
 
 ; ══════════════════════════════════════════════
@@ -351,6 +354,16 @@ UnlockTimerTick() {
 
     UnlockRunTime_UI.Value := "🕓   Unlock Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
 }
+
+SpinTimerTick() {
+    global SpinRunSeconds, SpinRunTime_UI, cHighlight
+    SpinRunSeconds++
+    mins := SpinRunSeconds // 60
+    secs := Mod(SpinRunSeconds, 60)
+
+    SpinRunTime_UI.Value := "🕓   Spin Time Running   —   " Format("{:02d}:{:02d}", mins, secs)
+}
+
 ; ══════════════════════════════════════════════
 ;  PIXEL DETECTION
 ; ══════════════════════════════════════════════
@@ -368,7 +381,7 @@ GetCoordsColor() {
     SetTimer(() => ToolTip(), -3000)
 }
 
-WaitForMenuRelative(text, ratioX, ratioY, targetColor, targetColorHDR := "", timeoutMs := 8000, postDelayMs := 1000, isFatal := false, variation := 0) {
+WaitForMenuRelative(text, ratioX, ratioY, targetColor, targetColorHDR := "", timeoutMs := 8000, postDelayMs := 1000, isFatal := false, variation := 0, note := "") {
     global ActiveMode, MasterMode, MasterStart, CurrentMultiplier
     CoordMode("Pixel", "Screen") 
     StartTime := A_TickCount
@@ -381,7 +394,7 @@ WaitForMenuRelative(text, ratioX, ratioY, targetColor, targetColorHDR := "", tim
     postDelayMs *= CurrentMultiplier
 
     Loop {
-        if (ActiveMode != "Race" && ActiveMode != "Buy" && ActiveMode != "Unlock" || (!MasterMode && MasterStart))
+        if ((ActiveMode != "Race" && ActiveMode != "Buy" && ActiveMode != "Unlock" && ActiveMode != "Spin") || (!MasterMode && MasterStart))
             return false
             
         ; ── ⏳ SMOOTH COUNTDOWN LOGIC ─────────────────────────────────────────
@@ -413,10 +426,13 @@ WaitForMenuRelative(text, ratioX, ratioY, targetColor, targetColorHDR := "", tim
         ; 3. Handle Timeout
         if (A_TickCount - StartTime > timeoutMs) {
             if (isFatal) {
-                Process("Sync Error: Menu timed out!")
+                if note
+                    Process(note)
+                else 
+                    Process("Sync Error: Menu timed out!")
                 return false
             } else {
-                Process("Sync Warning: Pixel missed. Proceeding blindly...", 2000)
+                Process("Sync Warning: Pixel missed. Proceeding...", 2000)
                 return true 
             }
         }
@@ -424,14 +440,14 @@ WaitForMenuRelative(text, ratioX, ratioY, targetColor, targetColorHDR := "", tim
     }
 }
 
-SkillPtsScan(ratioX, ratioY, ratioW, ratioH, delay:= 1000) {
+SkillPtsRaceScan(ratioX, ratioY, ratioW, ratioH, delay:= 1000) {
     global SkillPtsCount_In, SkillPtsWant_In, CarCount_In
     global PointsLabel_UI, SectorLabel_UI, TimeLabel_UI, CarsLabel_UI
     global ActiveMode, MaxPoints, CustomSkillPts, PointsGain, PointsTotal, TimeTotal, SelectedCarPoint
 
     Sleep(delay)
 
-    points := GetSkillPointsRelative(ratioX, ratioY, ratioW, ratioH)
+    points := ScanNumber(ratioX, ratioY, ratioW, ratioH)
 
     if (points = -1)
         points := SkillPtsCount_In.Value
@@ -456,12 +472,45 @@ SkillPtsScan(ratioX, ratioY, ratioW, ratioH, delay:= 1000) {
         CarsLabel_UI.Value := "Recommended Car Purchase  —  " Floor(PointsTotal / SelectedCarPoint)
     }
 
-    ;UpdateSkillPts({Value:points})
+    return points
+}
+
+SkillPtsScan(ratioX, ratioY, ratioW, ratioH, delay:= 1000) {
+    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In
+    global PointsLabel_UI, SectorLabel_UI, TimeLabel_UI, CarsLabel_UI
+    global ActiveMode, MaxPoints, CustomSkillPts, PointsGain, PointsTotal, TimeTotal, SelectedCarPoint
+
+    Sleep(delay)
+
+    points := ScanNumber(ratioX, ratioY, ratioW, ratioH)
+
+    if (points = -1) {
+        ToolTip "Current Skill Points cannot be detected"
+        SetTimer(() => ToolTip(), -2000)
+        SkillPtsCount_In.Value := 0
+    } else {
+        ToolTip "Current Skill Points: " points
+        SetTimer(() => ToolTip(), -2000)
+        SkillPtsCount_In.Value := points
+    }
+
+    SkillPtsWant_In.Value := Min(999 - points, MaxPoints)
+
+    PointsGain := GetMinScore(SkillPtsWant_In.Value)
+    PointsTotal := Min(PointsGain + SkillPtsCount_In.Value, 999)
+    CarCount_In.Value := Floor(PointsTotal / SelectedCarPoint)
+
+    TimeTotal := CalcTimeRace(SkillPtsWant_In.Value)  + CalcTimeBuy(CarCount_In.Value) + CalcTimeUnlock(CarCount_In.Value)
+
+    PointsLabel_UI.Value := "Est. Skill Points Gain  —  " PointsGain
+    SectorLabel_UI.Value := "Est. Sectors Count  —  " Ceil(PointsGain/AveragePoints)
+    TimeLabel_UI.Value :=  "Est. Total Time Completion  —  " Format("{:02}:{:02}", Floor(TimeTotal) , Round((TimeTotal - Floor(TimeTotal)) * 60))
+    CarsLabel_UI.Value := "Recommended Car Purchase  —  " Floor(PointsTotal / SelectedCarPoint)
 
     return points
 }
 
-GetSkillPointsRelative(ratioX, ratioY, ratioW, ratioH) {
+ScanNumber(ratioX, ratioY, ratioW, ratioH) {
     ; 1. Setup the bounding box based on your exact coordinates
     startX := Round(ratioX * A_ScreenWidth)
     startY := Round(ratioY * A_ScreenHeight)
@@ -469,29 +518,26 @@ GetSkillPointsRelative(ratioX, ratioY, ratioW, ratioH) {
     height := Round(ratioH * A_ScreenHeight)
 
     try {
-        ; 2. Scan the box
+        ; Scan the box
         result := OCR.FromRect(startX, startY, width, height)
         scannedText := result.Text
+        cleanNumber := RegExReplace(scannedText, "\D") 
 
         ; ── 🔎 TEMPORARY DEBUG TOOL ──────────────────────────────────────────
         ToolTip("OCR Sees: '" scannedText "'") 
         SetTimer () => ToolTip(), -4000 
         ; ─────────────────────────────────────────────────────────────────────
+
+        if (cleanNumber != "") {
+            return Number(cleanNumber)
+        }
+        ; ─────────────────────────────────────────────────────────────────────
         
-        ; 1. Handle the "No Skill Points" edge case
-        if InStr(scannedText, "No Skill Points") {
+        ; Fallback for 0 points / text-only messages
+        if InStr(scannedText, "Skil") || InStr(scannedText, "Avail") || InStr(scannedText, "No") {
             return 0
         }
-        
-        ; 2. If it's not "No", look for the actual number
-        if (result.Words.Length > 0) {
-            firstWord := result.Words[1].Text ; Grab ONLY the first clump (the number)
-            
-            ; Extract digits from just that first word
-            if RegExMatch(firstWord, "\d+", &match) {
-                return Number(match[0])
-            }
-        }
+
     } catch {
         ToolTip "Screen capture error or window minimized"
         SetTimer(() => ToolTip(), -2000)
@@ -500,6 +546,49 @@ GetSkillPointsRelative(ratioX, ratioY, ratioW, ratioH) {
     ToolTip "Text found but couldn't identify 'No' or a number"
     SetTimer(() => ToolTip(), -2000)
     return -1
+}
+
+ScanText(ratioX, ratioY, ratioW, ratioH, waitTime:= 0, targetText:="", searchNumber:=false) {
+    ; 1. Setup the bounding box based on your exact coordinates
+    startX := Round(ratioX * A_ScreenWidth)
+    startY := Round(ratioY * A_ScreenHeight)
+    width  := Round(ratioW * A_ScreenWidth)
+    height := Round(ratioH * A_ScreenHeight)
+
+    deadline := A_TickCount + waitTime
+
+    while (A_TickCount < deadline) {
+        try {
+            ; Scan the box
+            result := OCR.FromRect(startX, startY, width, height)
+            scannedText := Trim(result.Text)
+
+            ; 🔎 LIVE LOOP DEBUG TOOL
+            ; timeLeft := Max(0, Round((deadline - A_TickCount) / 1000, 1))
+            ; ToolTip("Scanning... Time left: " timeLeft "s`nSees: '" scannedText "'")
+            ; Process("Scanning for " targetText " (" Round(timeLeft) "s)")
+
+            ; Check if it contains specific text
+            if (scannedText != "" && InStr(scannedText, targetText)) {
+                ToolTip()
+                return scannedText
+            }
+
+            ; Check if it found a number (using our previous fix)
+            cleanNumber := RegExReplace(scannedText, "\D")
+            if (cleanNumber != "" && searchNumber:=true) {
+                ToolTip() ; Clear the tooltip
+                return Number(cleanNumber) ; Success! Return the number immediately
+            }
+
+        } catch {
+            ; ToolTip "Screen capture error or window minimized"
+            ; SetTimer(() => ToolTip(), -2000)
+        }
+        Sleep(50)
+    }
+    ToolTip() ; Clear the tooltip if we timed out
+    return false ; Return false if the loop finished without finding anything
 }
 ; ══════════════════════════════════════════════
 ;  KEY AND PROCESS

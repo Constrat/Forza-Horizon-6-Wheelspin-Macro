@@ -1,6 +1,6 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro		║
-; ║        Cyber Noir Edition v1.4.0        ║
+; ║        Cyber Noir Edition v1.5.0        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
@@ -10,10 +10,15 @@
 
 #Include Lib\OCR.ahk
 
-#Include Modules\Config.ahk
-#Include Modules\UI.ahk
-#Include Modules\Engine.ahk
-#Include Modules\Task_Race.ahk
+#Include modules\Config.ahk
+#Include modules\UI.ahk
+#Include modules\Engine.ahk
+#Include modules\Task_Race.ahk
+#Include modules\Task_Buy.ahk
+#Include modules\Task_Unlock.ahk
+#Include modules\Task_Spin.ahk
+
+TraySetIcon(A_ScriptDir "\assets\icon.ico")
 
 ; Construct and display the visual interface
 BuildGui()
@@ -27,6 +32,7 @@ BuildGui()
 [::StartBuy()
 ]::StartUnlock()
 /::ToggleAll()
+=::StartSpin()
 F12::Reload()
 `::TogglePause()
 ^+c::GetCoordsColor()
