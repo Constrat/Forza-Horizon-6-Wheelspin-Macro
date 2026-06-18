@@ -1,6 +1,6 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro        ║
-; ║        Cyber Noir Edition v1.6.0        ║
+; ║        Cyber Noir Edition v1.6.1       ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
@@ -239,7 +239,7 @@ BuildGui(savedVals := "") {
     StatusText := MyGui.Add("Text", "x0 y+10 w270 Center BackgroundTrans c" cStat, sLabel)
 
     ; ── Tab Control ───────────────────────────
-    TabControl := MyGui.Add("Tab3", "x5 y+15 w260 h400 +Buttons +0x400 c" p["accent"], ["Input", "Stats"])
+    TabControl := MyGui.Add("Tab3", "x5 y+15 w260 h450 +Buttons +0x400 c" p["accent"], ["Input", "Stats"])
     SendMessage(0x1329, 0, 127 | (26 << 16), TabControl)
 
     ; ══════════════════════════════════════════
@@ -251,7 +251,7 @@ BuildGui(savedVals := "") {
 
     ; ── Numeric Inputs (Strict Layout & Scope Matching) ──
     SetFixedFont(MyGui, 9, "norm", "Light")
-    MyGui.Add("Text", "x30 y+6 w155 BackgroundTrans c" p["text"], "⟡   Current Skill Points")
+    MyGui.Add("Text", "x30 y+25 w155 BackgroundTrans c" p["text"], "⟡   Current Skill Points")
     SkillPtsCount_In := MyGui.Add("Edit", "x179 yp-3 w63 Center Number Background" p["editBg"] " c" p["text"], savedVals ? savedVals[1] : 0)
 
     MyGui.Add("Text", "x30 y+6 w155 BackgroundTrans c" p["text"], "⟡   Desired Skill Points")
@@ -265,7 +265,7 @@ BuildGui(savedVals := "") {
 
     ; ── Cyber Dropdown: Car Selector ──────────
     SetFixedFont(MyGui, 9, "bold")
-    CarSelect_UI := MyGui.Add("Text", "x45 y+10 w180 h24 Center 0x200 Background" p["editBg"] " c" p["text"])
+    CarSelect_UI := MyGui.Add("Text", "x45 y+20 w180 h24 Center 0x200 Background" p["editBg"] " c" p["text"])
     
     CarSelect_UI.DefineProp("Value", {
         get: (this) => this.HasOwnProp("ctrlIndex") ? this.ctrlIndex : 1,
@@ -315,7 +315,7 @@ BuildGui(savedVals := "") {
 
     ; ── Targets ───────────────────────────────
     SetFixedFont(MyGui, 9, "bold")
-    MyGui.Add("Text", "x14 y+15 w242 Center BackgroundTrans c" p["header"],  "TARGETS")
+    MyGui.Add("Text", "x14 y+30 w242 Center BackgroundTrans c" p["header"],  "TARGETS")
     MyGui.Add("Text", "x14 y+0  w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     PointsGain  := GetMinScore(SkillPtsWant_In.Value)
@@ -379,7 +379,7 @@ BuildGui(savedVals := "") {
     ; ── Shared Content (outside tabs) ──────────
     TabControl.UseTab()
 
-    MyGui.Add("Text", "x14 y+10 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    MyGui.Add("Text", "x14 y+20 w242 Center BackgroundTrans c" p["divider"], "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
     ; ── Redesigned Delay Slider ────────────────
     SetFixedFont(MyGui, 9, "norm")
@@ -394,7 +394,7 @@ BuildGui(savedVals := "") {
 
     ; ── Cyber Dropdown: Code Selector ─────────
     SetFixedFont(MyGui, 8, "bold")
-    CodeSelect_UI := MyGui.Add("Text", "x85 y+5 w100 h24 Center 0x200 Background" p["editBg"] " c" p["text"])
+    CodeSelect_UI := MyGui.Add("Text", "x85 y+25 w100 h24 Center 0x200 Background" p["editBg"] " c" p["text"])
     
     CodeSelect_UI.DefineProp("Value", {
         get: (this) => this.HasOwnProp("ctrlIndex") ? this.ctrlIndex : 1,
@@ -446,7 +446,7 @@ BuildGui(savedVals := "") {
     FooterControls.Push(ThemeBtn := MyGui.Add("Text", "x14 yp+5 w30 h26 Center 0x200 Background" p["btnBg2"] " c" p["btnText2"], DarkMode ? "☀" : "🌙"))
     ThemeBtn.OnEvent("Click", (*) => ToggleTheme())
 
-    FooterControls.Push(VersionLink := MyGui.Add("Link", "xm+210 yp+12 Right", '<a href="https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/tag/v1.6.0">v1.6.0</a>'))
+    FooterControls.Push(VersionLink := MyGui.Add("Link", "xm+210 yp+12 Right", '<a href="https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/tag/v1.6.1">v1.6.1</a>'))
     FooterControls.Push(BottomSpacer := MyGui.Add("Text", "x0 y+5 w270 h1 BackgroundTrans c" p["footer"], ""))
 
     KeepBtn.OnEvent("Click", (*) => TogglePair("KEEP", &SpinMode, KeepBtn, SellBtn, p))
