@@ -1,6 +1,6 @@
 ; ╔═════════════════════════════════════════╗
 ; ║        MHI - FH6 Wheelspin Macro        ║
-; ║        Cyber Noir Edition v1.6.1        ║
+; ║        Cyber Noir Edition v1.6.2        ║
 ; ╚═════════════════════════════════════════╝
 
 #Requires AutoHotkey v2.0
@@ -458,7 +458,7 @@ BuildGui(savedVals := "") {
     FooterControls.Push(ThemeBtn := MyGui.Add("Text", "x14 yp+5 w30 h26 Center 0x200 Background" p["btnBg2"] " c" p["btnText2"], DarkMode ? "☀" : "🌙"))
     ThemeBtn.OnEvent("Click", (*) => ToggleTheme())
 
-    FooterControls.Push(VersionLink := MyGui.Add("Link", "xm+210 yp+12 Right", '<a href="https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/tag/v1.6.1">v1.6.1</a>'))
+    FooterControls.Push(VersionLink := MyGui.Add("Link", "xm+210 yp+12 Right", '<a href="https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/tag/v1.6.2">v1.6.2</a>'))
     FooterControls.Push(BottomSpacer := MyGui.Add("Text", "x0 y+5 w270 h1 BackgroundTrans c" p["footer"], ""))
 
     KeepBtn.OnEvent("Click", (*) => TogglePair("KEEP", &SpinMode, KeepBtn, SellBtn, p))
