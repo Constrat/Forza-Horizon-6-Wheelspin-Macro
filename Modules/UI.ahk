@@ -122,6 +122,7 @@ SetFixedFont(guiObj, pointSize, options := "", fontName := "Segoe UI") {
 ;  NOTIFICATION TOAST
 ; ══════════════════════════════════════════════
 ShowNotif(type, title, message := "") {
+    global GameMonitor
     switch StrLower(type) {
         case "success":
             accentColor := "33FF66"
@@ -145,7 +146,9 @@ ShowNotif(type, title, message := "") {
     Notif.SetFont("s9 norm cEEEEEE", "Segoe UI")
     Notif.Add("Text", "x15 y+5 w250 h35 BackgroundTrans", message)
 
-    Notif.Show("x" (A_ScreenWidth - 290) " y" (A_ScreenHeight - 110) " w280 h70 NoActivate")
+    MonitorGet(GameMonitor, &mLeft, &mTop, &mRight, &mBottom)
+
+    Notif.Show("x" (mRight - 313) " y" (mBottom - 140) " w250 h70 NoActivate")
     SetTimer(() => Notif.Destroy(), duration)
 }
 
@@ -168,9 +171,12 @@ RestoreBtn := MiniGui.Add("Button", "x144 y8 w25 h25", "⤢")
 RestoreBtn.OnEvent("Click", RestoreMainWindow)
 
 MainGui_SizeChange(thisGui, minMax, *) {
+    global GameMonitor
     if (minMax == -1) {
         thisGui.Hide()
-        MiniGui.Show("x10 y10 w180 h120 NoActivate")
+        
+        MonitorGet(GameMonitor, &mLeft, &mTop, &mRight, &mBottom)
+        MiniGui.Show("x" mLeft + 10 " y" mTop + 10 " w180 h120 NoActivate")
         WinSetTransparent(180, MiniGui.Hwnd)
     }
 }
