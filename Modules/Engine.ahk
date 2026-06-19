@@ -94,7 +94,7 @@ SmartCountdown(TotalSec, UIEl, ActiveText) {
 
 StartIndicators() {
     global StatusText, Process_UI, Key_UI, TotalRunTime_UI, ActiveMode
-    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI
+    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI, MonitorSelect_UI
 
     StatusText.Value 	:= "⬤  Running..."
     StatusText.SetFont("c" cActive)
@@ -117,6 +117,7 @@ StartIndicators() {
         LoopCount_In.Enabled := false
     }
     CodeSelect_UI.Enabled := false
+    MonitorSelect_UI.Enabled := false
 
     SetTimer(TotalTimerTick, 1000)
 }
@@ -124,7 +125,7 @@ StartIndicators() {
 ResetIndicators() {
     global Key_UI, Process_UI, StatusText, cIdle, cTextDim
     global TotalRunTime_UI, RaceRunTime_UI, BuyRunTime_UI, UnlockRunTime_UI, SectorCount, ActiveMode, MasterMode
-    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI
+    global SkillPtsCount_In, SkillPtsWant_In, CarCount_In, CarSelect_UI, MonitorSelect_UI
 
     SetTimer(RaceTimerTick, 0)
     SetTimer(BuyTimerTick, 0)
@@ -165,6 +166,7 @@ ResetIndicators() {
     CarSelect_UI.Enabled := true
     DelaySlider_UI.Enabled := true
     CodeSelect_UI.Enabled := true
+    MonitorSelect_UI.Enabled := true
     LoopCount_In.Enabled := true
 
     PressKey("W up")
