@@ -509,7 +509,7 @@ ScanNumber(ratioX, ratioY, ratioW, ratioH) {
 
     try {
         ; Scan the box
-        result := OCR.FromRect(startX, startY, width, height)
+        result := OCR.FromRect(startX, startY, width, height, Options := {grayscale: 1})
         scannedText := result.Text
         cleanNumber := RegExReplace(scannedText, "\D") 
 
