@@ -79,13 +79,13 @@ BuyLoop() {
 
         CarCount_In.Value := Floor(SkillPtsCount_In.Value / SelectedCarPoint)
         if CarCount_In.Value > 0
-            ShowNotif("info", "Car Purchase", CarCount_In.Value " " SelectedCar " will be purchased.")
+            ShowNotif("info", "Car Purchase", CarCount_In.Value " " SelectedCar "`nwill be purchased.")
         else {
             ShowNotif("error", "Car Purchase", "Insufficient Skill Points.")
             break
         }
 
-        ShowNotif("info", "Car Purchase", CarCount_In.Value " " SelectedCar " will be purchased.")
+        ShowNotif("info", "Car Purchase", CarCount_In.Value " " SelectedCar "`nwill be purchased.")
 
         Process("Navigating Journal...")
         Loop 3
