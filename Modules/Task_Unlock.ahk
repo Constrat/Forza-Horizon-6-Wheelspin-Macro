@@ -300,6 +300,6 @@ UnlockLoop() {
         
         PressKey("PgUp") ; Navigate to Campaign Menu
 
-        break ;
+        break
     }
 }
