@@ -30,7 +30,7 @@ An AutoHotkey v2 automation tool designed for Forza Horizon 6, featuring a modul
 
 This project is a desktop automation tool built with **AutoHotkey v2**. It automates multiple in-game workflows such as racing loops, car purchasing, and reward unlocking, while providing a fully custom graphical interface for monitoring progress in real time.
 
-The application features a modern, modular script structure separating UI configuration, OCR management, track profiles, and core execution macros into independent files for significantly easier codebase maintenance.
+The application features a modern, modular script structure separating UI configuration, OCR management, track profiles, and core execution macros into independent files for significantly easier codebase maintenance. Version 1.8.0 expands this framework with independent window control wrappers, mathematical multi-resolution scaling support, heuristic asset location discovery, and custom diagnostic overlay layouts.
 
 The original base script was developed by **6ftFish**, and this version has been significantly redesigned and expanded with pixel-detection verification systems, OCR asset tracking, custom UI improvements, and background play capabilities.
 
@@ -43,66 +43,74 @@ Before installing, ensure your system meets the following layout and control req
 * **AutoHotkey:** [AutoHotkey v2](https://www.autohotkey.com) (v1 scripts will not run)
 * **Execution Permissions:** You must run the script as **Administrator** if the macro does not execute or register inputs as intended.
 * **Game Language:** English (UI navigation and dynamic timing validation logic are optimized for the English game client).
-* **🖥️ Display & Scaling Settings:**
-  * **Aspect Ratio:** Natively built for **16:9 Resolution** (e.g., 1920x1080, 2560x1440, 3840x2160). However, non-native displays (such as 21:9 Ultrawide) are fully supported if you utilize *Special K* to run the game in a bordered window setup, as the macro passes input vectors relative to the game window canvas rather than your monitor workspace boundaries.
-  * **Display Mode:** Must be set to **Fullscreen** only (Alternatively, set to **Borderless Fullscreen** if you are utilizing Special K for background play configuration).
+* **🖥️ Display, Resolution & Framerate Settings:**
+  * **Aspect Ratio & Resolution:** Tested for standard **16:9 Resolutions** (e.g., 1920x1080, 2560x1440, 3830x2160). Version 1.8.0 introduces native **Multi-Target Math Scaling** options to dynamically adjust coordinate mappings. However, **the internal OCR text recognition system works best and delivers the highest reliability on a native 1080p (1920x1080) resolution**, though other rescaled 16:9 layouts may still function. Non-native arrays (such as 21:9 Ultrawide) are supported exclusively via windowed mode configurations.
+  * **Display Mode:** Fullscreen, Borderless Fullscreen, and Borderless Windowed are all structurally supported.
   * **Windows Display Scaling:** Fully supported across multi-monitor arrays. Custom interface elements neutralize OS display scaling interference, ensuring layouts remain pristine and functional.
+  * **Framerate:** Locking your game client to **60 FPS is almost mandatory** for the physics calculations, script delay buffers, and pixel-aware telemetry synchronization rules to align flawlessly.
 * **⌨️ Control Configuration:**
   * **Control Scheme:** Must use the native **WASD control layout** exclusively. Custom mappings or controller overlays will cause the automation routing to drop inputs.
-  * **Background Execution:** Fully supports background play alongside **Special K**. Input instructions target the game windows directly, regardless of which monitor it actively resides on.
+  * **Background Execution:** Fully supports advanced background play. Armed with a **Game Lock Engine**, input instructions transmit native activation signals directly to the target canvas window, forcing the game to process macro routines uninterrupted even when out of focus. **CRITICAL:** An unfocused windowed game client will **NOT** run the script properly unless it is explicitly targeted and locked using the interface's dedicated **Lock Button**.
 
 ---
 
 ## 📥 Installation
 
-> 🚀 **Don't want to deal with scripts?** 
+> 🚀 **Don't want to deal with scripts?**
 > You don't need to install AutoHotkey! Just head over to the **[Latest Release](https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/latest)**, download the pre-compiled `FH6_Macro_CyberNoir.exe`, and double-click to run.
 
 ### ⚡ Option A: The Easy Way (Recommended)
 1. Navigate to the **[Releases](https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro/releases/latest)** section on the right-hand sidebar of this page.
-2. Click on the latest version (e.g., `v1.7.0`).
+2. Click on the latest version (e.g., `v1.8.0`).
 3. Under the **Assets** dropdown at the bottom of the release notes, click on `FH6_Macro_CyberNoir.exe` to download it.
 4. Right-click the downloaded file and launch the application interface.
 
 ### 💻 Option B: Running from Source (For Devs)
 1. Download and install [AutoHotkey v2](https://www.autohotkey.com).
 2. Clone this repository or download it as a ZIP file:
-```bash
-   git clone https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro.git
-```
-3. Extract the files (if downloaded as a ZIP) into a dedicated folder, ensuring all modular script files and dependencies (including `OCR.ahk`) remain in the same directory.
-4. Double-click the `main.ahk` file to launch the application interface.
 
-**Note:** If the macro inputs do not register properly in-game, right-click the file and select **Run as Administrator**.
+    git clone https://github.com/M-Haziq-Iqbal/Forza-Horizon-6-Wheelspin-Macro.git
+
+3. Extract the files (if downloaded as a ZIP) into a dedicated folder, ensuring all modular script files and dependencies (including `OCR.ahk` and the newly integrated `modules/SpecialK.ahk` engine library) remain in the same directory structure.
+4. Double-click the `main.ahk` file to launch the application interface.
 
 ---
 
 ## ✨ Key Features
 
+* 🚀 **Advanced Game Lock & Background Rendering Engine:** Introduced a specialized system window state control mechanism that forces the game client to continue running inputs uninterrupted while completely minimized or out of focus. By continuously transmitting native activation signals straight to the canvas execution window thread, the macro system fully bypasses default window-focus suspension behaviors.
+* 📊 **Resolution Control Configurations & Multi-Target Math Scaling:** Implemented structural options allowing users to configure target screen resolutions directly within the dashboard settings. This runs alongside a rewritten coordinate processing model that mathematically rescales coordinates and text bounding box tracking grids on the fly across different window sizes.
 * 🎨 **Dynamic Theme Engine (`GetPalette`):** Switch seamlessly between a customized, cyber-styled **Dark Mode** and **Light Mode** workspace layout on-the-fly.
-* 🗲 **Compact Mini Widget (`MiniGui`):** Minimizing the main dashboard automatically shrinks the layout into a small floating overlay widget tracking runtime, key execution states, accumulated credits, and Super/Regular Wheelspin counts.
+* 🗲 **Comprehensive MiniGUI Layout Overhaul:** Minimizing the main dashboard shrinks the environment into a highly responsive, floating overlay widget tracking runtime, key states, credits, and wheelspins.
+  * 🟢 **State-Driven Icon Glyphs:** Built-in UI layer assets mutate shapes and colors instantly (Flashing Green for execution, Amber for Paused, Burning Red for hard stops).
+  * 🔘 **Integrated Action Toggles:** Low-level clickable control hooks built right into the minimized layout to quickly toggle diagnostic overlays, activate game locks, or trigger on-the-fly window transformations.
+  * ⚙️ **System Control Actions:** Quick-access hooks to dispatch global environment resets, reloads, and hard script aborts without opening the main window.
 * 🗮 **DPI-Safe Structural Elements:** Replaced native OS slider components with an entirely custom system, fully protecting the window from layout clipping bugs caused by Windows display scaling.
 * 🔘 **Sleek Tier Toggle Buttons:** Features dedicated **STANDARD** and **PREMIUM** buttons to quickly toggle your game edition layout instead of clunky old checkboxes.
-* 🛞 **Automated Wheelspin Module:** Built-in automation loop that handles both regular and Super Wheelspins, automatically detecting the spin type, skipping animations, and tracking totals.
+* 🛞 **Draggable Wheelspin Panel Subsystem:** Loop sequences and tracking for farming regular/Super Wheelspins have been moved into a modular, independent sub-panel interface. This auxiliary window automatically computes its layout to spawn centered relative to the master UI, supports fluid click-and-drag re-positioning, and inherits global dark/light styles.
+  
+  ![Draggable Wheelspin Panel Interface](placeholder_image_link_wheelspin_panel)
+
 * 🔄 **Keep or Sell Choice:** Integrated UI toggles for **KEEP** and **SELL** rules, allowing you to choose whether the macro automatically sells duplicate prize cars for credits or saves them to your garage.
-* 👁️ **Optical Character Recognition (OCR):** Integrates `OCR.ahk` alongside specialized functions to scan screen regions, parse text strings, and extract real-time numeric data via regex matching.
-* 🔒 **Targeted Window Processing & Direct Routing:** Enforces strict game-scoped input routing bound exclusively to `ahk_exe ForzaHorizon6.exe`, passing actions relative to the application canvas for robust background multi-monitor playback compatibility.
-* 🛡️ **Runaway Input Prevention:** Upgraded hardware-level fallback routines inside `ResetIndicators()` forcefully send a `W up` release command, permanently eliminating throttle-stick issues.
+* 👁️ **Fuzzy Optical Character Recognition (OCR):** Integrates `OCR.ahk` alongside specialized parsing functions. Features a **Fuzzy Edit-Distance String Recognition Pipeline** which replaces rigid exact-string matches with a case-insensitive mathematical similarity scoring system, letting the macro safely absorb subtle OCR misreads without halting operations. Optimized extensively for **1080p target canvas monitors**.
+* 🔒 **Strict Handle Pointer Targeting (`HWND`):** Abandons fragile text title tracking in favor of binding directly to a unique window descriptor identification token (`HWND`). Background micro-automation sequences remain fully isolated from desktop focus changes, overlapping apps, or title string renames.
+* 🛡️ **Runaway Input Prevention & Health Guardrails:** Upgraded hardware fallback routines forcefully send a `W up` release command to eliminate throttle-stick issues. Additionally, **Pre-Execution Application Health Guardrails** run verification checks prior to tasks; if the game client crashes or ceases running, the macro steps out of execution states instead of firing keys randomly into empty desktop space.
 * ⏱️ **Execution Speed Control:** Integrated an analog Delay Multiplier slider supporting expanded **0.25x to 5.0x** scaling to dynamically adjust input delays and pixel detection timeouts based on system performance.
-* 🔁 **Sequence Looping Loop Fixed:** Rewrote the multi-stage automation queue loop counter (`ToggleAll`) to evaluate decrements linearly step-by-step (`-= 1`), permanently removing exponential reduction logic bugs.
+* 🔁 **Sequence Looping & Buffer Corrections:** The multi-stage queue loop counter (`ToggleAll`) evaluates decrements linearly step-by-step (`-= 1`). It incorporates an **Asset Purchase Increment Buffer Over-Correction** (off-by-one padding adjustment) to purchase exactly one extra asset beyond calculated bounds, mitigating visual recognition skips during heavy batch operations.
 * 🗺️ **Track Profiles:** Dropdown track selection supporting distinct configurations for layouts like "LIQUIDPOTATO" and "AMMAGEDON".
-* 🏁 **Bespoke Race Logic:** Tailored acceleration/braking intervals and an automated 50-race continuation mechanic optimized specifically for advanced profiles like AMMAGEDON.
+* 🏁 **Bespoke Race Logic & Recovery:** Automated 50-race continuation mechanics optimized using dynamic pixel evaluations for automated turning adjustments and structured braking. Features an integrated **Leaderboard Recovery Protocol**—if post-race menus fail to load despite hitting sector markers, the engine auto-restarts the match and gracefully docks tracked values to adjust corrective run counts.
 * ⌨️ **Hardware-Level Input:** Employs low-level physical scan codes for absolute reliability, minimizing input drops and bypassing focus errors.
-* �️ **Pixel-Aware Engine:** Dynamic menu loading synchronization checks to systematically mitigate desync issues.
+* 👁️‍🗨️ **Pixel-Aware Engine:** Dynamic menu loading synchronization checks to systematically mitigate desync issues.
 * 🔔 **Accent-Driven Notifications:** Integrated color-coded status bars into the toast notification sub-system (`ShowNotif()`) to quickly communicate runtime flags (🟢 Success / 🔴 Timeout / 🔵 Warning).
-* 📦 **System Tray Icon:** Features a dedicated application icon in the system tray for seamless background minimization and tool management.
-* 📊 Real-time session runtime telemetry, progress calculations, and live wheelspin tracking rows (*Wheelspins Opened*, *Wheelspins Left*, and *Spin Time Running*).
-* 🏁 Automated race loop execution with structural timing cushions and recovery checks.
-* 🚗 Fast-navigation car purchasing routines.
-* 🛞 Automated wheelspin and cash reward perk unlocking.
 * 📉 **Advanced Skill Point Verification:** Real-time pre-flight and post-race character logic to securely track skill investments and prevent zero-balance loop crashes.
-* 📋 Click-to-copy in-game share code integration that updates dynamically based on the active track profile.
 * 🛠️ **Developer Diagnostic Tool:** Integrated automated coordinate/color calibration utility.
+* 🔍 **Visual Bounding Zone Diagnostic Overlay:** Provides an adjustable, semi-transparent colored bounding box overlay that hooks directly onto your game window dimensions to outline exactly where automated color-scanning and optical text parsing routines are scraping data in real-time.
+
+  ![Visual Bounding Zone Diagnostic Overlay](placeholder_image_link_diagnostic_overlay)
+
+* 📁 **Centralized File System Configuration Sync:** Standardizes a local `.ini` configuration framework to cache structural variable settings (custom tracks, car indices, loop multipliers, viewport configurations, licensing tiers) on your machine for seamless initialization across reboots.
+* 🚀 **Heuristic Application Path Discovery Matrix:** An autonomous background engine scanner that queries local Windows Registry keys, traces registered App Paths, and checks default system directories across multiple storage drives to locate the game executable without requiring manual path specifications.
+* 🖼️ **Viewport Placement & State Transformation Suite:** Functional hotkeys allowing immediate windowed-to-fullscreen layout modifications, assigning absolute "Always On Top" layering hierarchies to the target canvas, and granting users mouse-bound click-and-drag spatial displacement to fluidly move the viewport.
 
 ---
 
@@ -114,35 +122,45 @@ The automation workflow is split into three independent processes that can be ex
 Runs only the race automation process.
 * Automatically targets the user's preferred EventLab track, which **must be positioned as the first entry in your Favorites list**.
 * Drives the configured layout automatically using profile-specific telemetry and automated turning color nodes.
+* Employs conditional logic branch corrections to tracking handshakes, preventing lockups inside unhandled loading states or race scoreboard pauses.
 
 ### 🚗 Buy Mode (Hotkey `[`)
 Runs only the vehicle purchasing process.
 * **Pre-Flight Resource Verification:** Instantly checks via OCR whether current skill points are sufficient to purchase the chosen vehicle before initializing.
 * **Resource-Driven Budgets:** Dynamically calculates the maximum number of cars to process based strictly on active skill points, triggering an immediate early-exit safeguard if resources run thin.
 * Dynamically shifts execution pathways based on whether the **STANDARD** or **PREMIUM** tier toggle button is engaged.
+* Employs off-by-one buffer padding adjustments to purchase an extra safety asset, preventing menu recognition tracking errors.
 
 ### 🛞 Unlock Mode (Hotkey `]`)
 Runs only the reward unlocking process.
 * **Pre-Flight Resource Verification:** Automatically scans and checks if skill points are sufficient before starting standalone cycles.
+* **Optical Car Validation Safety Framework:** Introduces an automated header validation scan before assigning perk points. If a structural discrepancy is detected between the target vehicle and the on-screen asset, it fires an emergency loop exit to safeguard your hard-earned skill points.
 * Unlocks the required mastery perks for specific rewards using different cars, and removes the unlocked cars from the garage afterward.
 
 ### ♾️ Full Automation Loop (Hotkey `/`)
 Combines all processes into a single continuous workflow (Race → Buy → Unlock → Repeat). The macro will continuously cycle through all stages for the designated number of sequence loops, properly maintaining residual skill point offsets across full cycles.  
 🎥 [Watch the Full Loop Demonstration](https://www.youtube.com/watch?v=6ezhyNeIYko)
 
+### 🛞 Spin Mode (Hotkey `=`)
+Runs only the reward-opening process.
+* **Menu Hook:** Designed to run while hovering over the wheelspin tiles inside the **My Horizon** pause menu.
+* **Prize Management:** Automatically handles duplicate car rewards based on your chosen **KEEP** or **SELL** toggle configuration.
+* **Backlog Clearing:** Continuously burns through standard or Super Wheelspins while logging real-time statistics on the display overlay.
+
 ---
 
 ## 🧠 Core Systems
 
-### 🎛️ Automation Engine
-Controls in-game navigation via rock-solid hardware scan codes, routing inputs to background targets. Features responsive color-sampling verification layers (fully scaled by the selected speed multiplier) to ensure menus are rendered before issuing subsequent commands.
+### 🎛️ Automation Engine & Game Lock
+Controls in-game navigation via rock-solid hardware scan codes. Utilizes strict `HWND` identification pointers to lock input transmission sequences directly onto the target application thread canvas, insulating execution paths from focus shifts, user clicks, or monitor adjustments. 
 
 ### 📊 Telemetry System
 Actively tracks total running time, loop-specific session times, total acquired cars, open/remaining wheelspins, and granular sector updates with a clean, unified presentation.
 
-### 🧮 Progress Estimation
+### 🧮 Progress Estimation & Data Schemas
 Uses optimized deterministic internal functions to calculate real-world session metrics and completion windows based on fixed empirical loading baselines instead of volatile runtime estimates.
 
+* **Typed Hash Mapping:** Reengineered into explicit dictionary structures (`EventLabData` and `CarData`) ensuring track metadata and vehicle configurations scale reliably with customized additions.
 * **Dynamic Performance Scaling:** Tracks exact math-driven profile variables to log performance updates per sequence interval.
 * **Maximum Skill Point Calculation:** The in-game Skill Point cap is 999. The application calculates your target based on your current scanned points plus the estimated session gain, capping out automatically.
 * **Overestimation Prevention Cap:** The maximum score achievable in one full loop iteration is restricted to a conservative ceiling of **980**. This directly counters mathematical overestimations, preventing the loop routine from buying or unlocking redundant surplus vehicles.
@@ -176,7 +194,9 @@ You can choose which vehicle the macro purchases and unlocks perks for via the G
 | `/` | Toggle Continuous Full Automation Cycle (`INIT SEQUENCE`) |
 | `` ` `` | Toggle Pause / Unpause Script State |
 | `Ctrl + Shift + C` | Developer Utility: Sample & Copy Normalized Screen Coordinates (x / width, y / height) & Hex Color Code |
+| `F5`  | Toggle Detection Zone Overlay |
 | `F12` | Force Reload Script Module |
+| `Alt + Left Click` | Drag Game Window Client |
 
 ---
 
@@ -196,21 +216,20 @@ Make sure you are in the Home Menu, loaded fully into an active session (no load
 </p>
 
 #### For Wheelspin / Spin Mode
-Open the pause menu and navigate over to the **My Horizon** tab. Use your keyboard controls to highlight/hover over the specific wheelspin tile (Regular Wheelspin or Super Wheelspin) that you intend to farm, **without actually entering or clicking into the menu selection**.
+Open the pause menu and navigate over to the **My Horizon** tab. Use your keyboard controls to highlight/hover over the specific wheelspin tile (Regular Wheelspin or Super Wheelspin) that you intend to farm, **without actually entering or clicking into the menu selection**. The detached draggable wheelspin panel can be snapped nearby for convenient monitoring.
 
 <p align="center">
   <img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/3a4ce3b7-f695-4cf4-a174-64ee42cd2c29" />
 </p>
 
-### 🔁 Special K Background Play Setup (Optional)
-To enable background execution so that the macro functions seamlessly while you use your machine for other workflows, you must install the **Special K** mod engine on your device. Once Special K is installed, configure your game and mod settings using the following steps:
+### 🔁 Special K Background Play Setup (Optional, only install if default background play is not working properly)
+Version 1.8.0 includes a **Special K Mod Wrapper Deployment Asset Manager**. The macro automates runtime folder checks and auto-injects required Special K wrappers into the environment space to support borderless background input parsing natively.
 
-1. Ensure your in-game display layout is set to **Borderless Fullscreen** (standard Exclusive Fullscreen blocks background focused input loops).
-2. Launch your game with the Special K mod injected.
-3. Press `Ctrl + Shift + Backspace` to open the Special K control panel overlay.
-4. Expand **Input Management** > **Enable / Disable Devices**.
-5. Uncheck or toggle off **Disable Keyboard Input to Game**.
-6. Press `Ctrl + Shift + Backspace` again to close the control panel.
+Recommended settings will be implemented automatically if Special K is enabled through the app. However, in case automatic settings are not working properly, confirm the following options are checked:
+1. Press `Ctrl + Shift + Backspace` to open the Special K control panel overlay.
+2. Expand **Input Management** > **Enable / Disable Devices**.
+3. Uncheck or toggle off **Disable Keyboard Input to Game**.
+4. Press `Ctrl + Shift + Backspace` again to close the control panel.
 
 <p align="center">
   <img width="2559" height="1439" alt="Screenshot 2026-06-15 135022" src="https://github.com/user-attachments/assets/e8e9e749-8515-4cb0-afaa-5af52fd89e07">
@@ -219,9 +238,9 @@ To enable background execution so that the macro functions seamlessly while you 
 ### 🎯 EventLab Menu Setup
 Ensure the EventLab system is accessible. **The automatic share-code entry mechanism has been completely removed.**
 
-*   **CRITICAL ENTRY SELECTION REQUIREMENT:** You **must** add your preferred EventLab track to your in-game Favorites list and make sure it is sorted as the **very first entry (index 1)** in that list. The script uses precise grid paging (`pgDn`) to select the first option instantly.
-*   **AMMAGEDON (Default Profile):** Highly optimized using dynamic pixel color evaluations for automated turning adjustments and structured braking parameters to prevent wall crashing. This profile delivers reliable max-score processing of up to **980 points** across 100 sections. Ensure your game is locked to a **recommended 60 FPS** to preserve physics timing and prevent synchronization drops.
-*   **LIQUIDPOTATO:** Available as an alternate legacy profile layout known for high structural path consistency during long overnight runs.
+* **CRITICAL ENTRY SELECTION REQUIREMENT:** You **must** add your preferred EventLab track to your in-game Favorites list and make sure it is sorted as the **very first entry (index 1)** in that list. The script will select the first option.
+* **AMMAGEDON (Default Profile):** Highly optimized using dynamic pixel color evaluations for automated turning adjustments and structured braking parameters to prevent wall crashing. This profile delivers reliable max-score processing of up to **980 points** across 100 sections. Ensure your game is locked to **60 FPS (Almost Mandatory)** to preserve physics timing and prevent synchronization drops.
+* **LIQUIDPOTATO:** Available as an alternate legacy profile layout for higher consistency and reliability.
 
 <p align="center">
   <img width="1941" height="896" alt="EventLab Setup 1" src="https://github.com/user-attachments/assets/c0dab41f-01bf-4975-99a9-bf48ff36028a"> 
@@ -265,7 +284,6 @@ Verify your in-game configurations match the settings below for maximum consiste
 | Braking | ASSISTED |
 | Steering | AUTO-STEERING |
 | Shifting | AUTOMATIC |
-| Framerate | **60 FPS Recommended** |
 
 <p align="center">
   <img width="2559" height="1439" alt="Screenshot 2026-06-17 215443" src="https://github.com/user-attachments/assets/3d48c1f9-904d-434b-8bcf-fe21cc16cffc" />
@@ -291,11 +309,15 @@ Navigate to **Settings → HUD & Gameplay → What's Next** and turn it **OFF**.
 For the pixel colour synchronization system to work at maximum speed and accuracy, your setup **must** meet these conditions:
 * **HDR:** Off
 * **Brightness:** 50
-* **Display Mode:** Fullscreen Only (Or Borderless Fullscreen/Bordered when using Special K setup)
-* **Aspect Ratio:** 16:9 Only (Support Special K bordered window alignment for non-native 16:9 monitor)
+* **Framerate:** 60 FPS (Almost Mandatory)
+* **Display Mode:** Fullscreen, Borderless Fullscreen, or Windowed configurations. Use the in-app **Resolution Dropdown** to configure Windowed mode resolution and the "🗗" button on the mini overlay to activate the mode.
+* **Aspect Ratio:** 16:9 Only.
+* **Resolution:**
+  * In-Game Video Settings: Highly recommended to be set to at most 1920x1080. This ensures internal UI elements and text assets render at the exact scale the OCR engine expects.
+  * Game Client (Window Size): Can be any 16:9 resolution. The macro's math engine will automatically rescale its coordinate tracking grid to match whatever size your desktop window container is stretched to.
 * **HUD Safe Frame:** Default Calibration
 * **Graphics Quality:** Lowest possible is highly recommended
-* **Screen Clearance:** The **left half of your screen must be completely clear**. Turn off any Discord overlays, stream chat widgets, or floating windows, as they may block the script from reading the HUD pixels.
+* **Screen Clearance:** The **left 1/3 of your screen must be completely clear**. Turn off any Discord overlays, stream chat widgets, or floating windows, as they may block the script from reading the HUD pixels.
 
 <p align="center">
   <img width="2559" height="1439" alt="Screenshot 2026-06-17 215625" src="https://github.com/user-attachments/assets/46265802-0e86-4b81-90fe-5329ab5245e9" />
@@ -303,16 +325,16 @@ For the pixel colour synchronization system to work at maximum speed and accurac
 
 > *Note: If these requirements are not met, the script will automatically switch to a slower, time-based fallback mode to prevent crashing, but your farming speed will drop noticeably and some flows might not work correctly.*
 
-### ⚠️ Keep Left Half of Screen Uncovered!
-**CRITICAL RUNTIME WARNING:** Do **NOT** cover, overlay, or block the **left half of your monitor screen** while this macro is executing in foreground configuration.
+### ⚠️ Keep Left 1/3 of Screen Uncovered!
+**CRITICAL RUNTIME WARNING:** Do **NOT** cover, overlay, or block the **left 1/3 of your monitor screen** while this macro is executing in foreground configuration.
 
-The dynamic pixel engine samples hex color data across coordinates located on the left half of the display workspace. If background apps, streaming overlays, or Windows system notification banners obscure any section of the screen's left half, the pixel scanner will read false values, resulting in a **Sync Error / Menu Timeout**.
+The dynamic pixel engine samples hex color data across coordinates located on the left 1/3 of the display workspace. If background apps, streaming overlays, or Windows system notification banners obscure any section of the screen's left half, the pixel scanner will read false values, resulting in a **Sync Error / Menu Timeout**. Press F5 to toggle the Detection Zone layout; the area covered in red is the safe zone.
 
 <p align="center">
   <img width="2563" height="1453" alt="Screenshot 2026-06-11 025901" src="https://github.com/user-attachments/assets/700ce2ab-6d03-474a-8dfb-fa6c46e263d9">
 </p>
 
-### 🗺️ HUD Safe Frame Calibration
+### 📏 HUD Safe Frame Calibration
 Navigate to **Settings → HUD & Gameplay** and adjust the UI boundaries to the following exact values:
 * **HUD Safe Frame Horizontal:** `5`
 * **HUD Safe Frame Vertical:** `9`
@@ -323,45 +345,48 @@ Navigate to **Settings → HUD & Gameplay** and adjust the UI boundaries to the 
 
 ## 🔧 Troubleshooting & FAQ
 
-### Q: The script immediately errors out with a "Sync Error" loop.
-**A:** Ensure your game is in dedicated **Fullscreen** mode (or configured **Bordered** if using Special K background setups), and verify that absolutely no window panels, overlays, or pop-ups are obscuring the **left half of your screen**. The pixel coordinate used for identifying a successful free roam return relies on checking the active **ANNA** UI button instead of the old House icon. If issues persist, consider shifting the Delay Multiplier slider to a higher value to scale up detection timeouts.
+### Q: The macro runs, but clicks or keystrokes do not register in-game.
+**A:** Windows security policies frequently block automated virtual inputs within high-privilege applications like games. Close the macro entirely, right-click `FH6_Macro_CyberNoir.exe` or `main.ahk`, and select **Run as Administrator** to grant the execution loop the necessary hardware-level input privileges.
 
-### Q: The macro runs but clicks or keystrokes do not register in-game.
-**A:** Windows security policies often block automated inputs within high-privilege applications like games. Close the macro, right-click `FH6_Macro_CyberNoir.exe` or `main.ahk`, and select **Run as Administrator** to grant the execution loop necessary device input privileges.
+### Q: Why is the macro missing menu transitions, breaking its flow, or pressing keys out of order?
+**A:** This happens when the script's default timing intervals are too fast for your PC configuration. If your storage drive (HDD/SSD) takes a moment to load scenes, or if you experience sudden background CPU spikes, the macro will desync. Open the dashboard and increase the analog **Delay Multiplier** slider (e.g., to `1.5x` or `2.0x`) to add wider safety cushions until the menus sync perfectly.
 
-### Q: The vehicle does not turn or navigate menus properly.
-**A:** The macro hooks into default background mappings using hardware scan codes (`ControlSend`) targeted directly to `ahk_exe ForzaHorizon6.exe`. Ensure the target process name matches exactly. If you are attempting background execution, confirm that keyboard input has been enabled in Special K's Input Management settings.
+### Q: Why does the macro drop inputs or break loop steps when I click out of the game?
+**A:** The macro fully supports running in an unfocused game window, but you must configure it correctly to avoid layout or focus issues:
+* **Enable Always On Top:** If you are playing in windowed mode, make sure to enable **Always on Top** mode via the macro interface. This ensures the game client continues rendering correctly in the background without getting buried or suspended by other application windows.
+* **The "First-Time Unfocus" Quirk:** The background execution engine has a minor quirk—if the game loses focus for the very first time while you are actively in Free Roam or mid-race during an EventLab, the game will automatically pause itself, breaking the macro's flow.
+* **How to Avoid Pausing:** To prevent this, **always unfocus the game while you are sitting in a menu** (such as the main pause menu or house menu). Once the game is unfocused from within a menu, it will run smoothly in the background. 
+* **Hands-Off Rule:** Do **NOT** click back onto the game window once your background farming session has started. Re-focusing the game means you will eventually have to unfocus it again, which re-triggers the pause quirk and interrupts the automated workflow.
 
-### Q: The vehicle collides with walls during the EventLab loop session or causes a race desync.
-**A:** Ensure you are running the optimized **AMMAGEDON** configuration profile with **Auto-Steering** and **Assisted Braking** enabled. In the event of a missed pixel scanning window, the macro replaces manual chassis braking loops with an intelligent **dynamic throttle decoupling (throttle release)** protocol. This minimizes severe desynchronization penalties and safely guides the race to an actual completion screen.
+### Q: Why does the OCR function fail or skip loops when running on high-resolution displays?
+**A:** While v1.8.0 uses a Multi-Target Math Scaling engine to scale text tracking grids across standard 16:9 configurations, **the internal OCR library works best and achieves peak recognition accuracy on a native 1080p (1920x1080) resolution**. If you encounter recurrent OCR parsing drops on 1440p or 4K, setting your game rendering engine natively to 1080p will resolve the problem.
 
-### Q: What happens if the end-of-race leaderboard screen fails to display?
-**A:** The macro features an integrated **Leaderboard Recovery Protocol**. If your sector targets and estimated points have been fully achieved but the post-race leaderboard menu cannot be detected, the system executes an automated self-healing match restart. Following the restart, accumulated points and sector markers are gracefully docked to dynamically scale out the corrective extra races needed to hit your targets.
+### Q: Can I run this macro at 144Hz or with an uncapped framerate?
+**A:** Locking your game client to **60 FPS is almost mandatory**. The automation script's multi-stage delay systems, turn profiles, loading intervals, and pixel engine checking loops are closely timed to a 60Hz physics update cycle. Running higher or unstable frame rates will trigger immediate desynchronization and tracking errors on the tracks.
 
----
+### Q: The script keeps giving me a "Menu timed out!" or "Sync Error" message.
+**A:** Check that:
+1. **HUD Safe Frames** match the required `5` (Horizontal) and `9` (Vertical) adjustments.
+2. Direct **Resolution Configuration** settings on your dashboard perfectly match the resolution of your game client so the coordinate scaling math lines up.
+3. Graphics filters like GeForce Experience overlays, HDR, or Windows "Night Light" are disabled, as they warp hex color values entirely.
 
-## ❓ Pixel Detection FAQ
+### Q: I keep seeing "Sync Warning: Pixel missed. Proceeding blindly..." in the console. Is the script broken?
+**A:** No! This is the built-in **Soft-Fail Safety Net**. If your PC lags or your graphic settings cause a slight color mismatch, the script recognizes it missed the pixel. Instead of crashing out and breaking the farm loop, it logs a warning, waits a brief scaled buffer for safety, and continues running the sequence normally.
 
-### Q: The script keeps giving me a "Menu timed out!" error, but the menu is clearly open. What's wrong?
-**A:** There are two common culprits for a false timeout:
-1. **Incorrect HUD Scale / Safe Frame:** If you adjusted your UI scale or safe frame bounds in the game settings, the menus will physically move, causing the script to look at the wrong coordinates. Reset them to **Default**.
-2. **Graphics Filters:** Programs like GeForce Experience (Alt+F3 filters), f.lux, or Windows "Night Light" alter screen colors in real time, blinding the script. Turn them off while farming.
+### Q: How do I easily get the correct share codes for the EventLab tracks or car tunes?
+**A:** You don't need to manually type them out! The app features a **📋 Click-to-copy in-game share code integration** right in the GUI footer. Simply select your active track profile from the dropdown menu, and the footer will dynamically update with the correct blueprint and tuning codes. Just click them to instantly copy them to your clipboard for easy pasting into the game.
 
 ### Q: Can I turn off my monitor while running the macro overnight?
 **A:** **Yes, but only by pressing the physical power button on your monitor.**
 * **Do NOT** let Windows put the display to sleep (Power Saving Mode).
 * **Do NOT** lock your PC (`Win + L`) or sign out. 
-Doing either of these stops Windows from rendering the game engine to your graphics card's frame buffer, turning the script's vision completely black. If you want to go completely headless (unplugged), use an **HDMI Dummy Plug / EDID Emulator**.
+Doing either of these stops Windows from rendering the game engine to your graphics card's frame buffer, turning the script's vision completely black.
 
 ### Q: Can I use Discord, watch YouTube, or stream while it runs?
-**A:** Yes, since the software fully supports background execution alongside **Special K** using targeted window background routing. If running in the foreground, just ensure those windows do not cover the **left half of your screen**.
+**A:** Yes, since the software fully supports background execution. If running in the foreground, just ensure those windows do not cover the **left 1/3 of your screen**.
 
 ### Q: Do I still need a native 16:9 monitor layout to run the application?
-**A:** No longer mandatory! While the internal matrix remains mapped onto a 16:9 ratio grid, users with non-native display arrays (e.g., Ultra-wide 21:9 or 16:10) can deploy windowed wrapper configurations via utilities like *Special K*. Because the macro evaluates input data relative strictly to the bounding window handles rather than monitor coordinates, execution tracks perfectly across bordered 16:9 setups.
-
-### Q: I keep seeing "Sync Warning: Pixel missed. Proceeding blindly..." in the console. Is the script broken?
-**A:** No! This is the built-in **Soft-Fail Safety Net**. If your PC lags or your graphic settings cause a slight color mismatch, the script recognizes it missed the pixel. Instead of crashing out and breaking the farm loop, it logs a warning, waits a brief scaled buffer for safety, and continues running the sequence normally.
-
+**A:** No longer mandatory! While the internal matrix remains mapped onto a 16:9 ratio grid, users with non-native display arrays (e.g., Ultra-wide 21:9 or 16:10) can deploy windowed mode through "🗗" button on the macro interface dashboard. Because the macro evaluates input data relative strictly to the bounding window handles rather than monitor coordinates, execution tracks perfectly across bordered 16:9 setups.
 ---
 
 ## ⚠️ Important Warning (READ BEFORE USE)
@@ -378,7 +403,7 @@ Before leaving the macro completely unattended for extended windows, execute eac
 
 ## 🛠️ Customization Encouraged
 
-Users are strongly encouraged to dive into the modular source architecture to adapt layout functions. You can easily tweak color bounds, update navigation tracking components, customize window parameters, adjust the global UI updater parameters, or inject customized performance logic paths within the track profile configs to tailor it to your setup.
+Users are strongly encouraged to dive into the modular source architecture to adapt layout functions. All primary preferences are written cleanly to the centralized `.ini` file configuration framework, allowing you to synchronize custom event paths, adjust multiplier scales, swap target viewport sizes, or customize baseline performance paths across script initializations safely.
 
 ---
 
