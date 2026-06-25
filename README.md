@@ -3,9 +3,9 @@
 An AutoHotkey v2 automation tool designed for Forza Horizon 6, featuring a modular architecture, custom GUI, optical character recognition (OCR), pixel-aware session tracking, and structured automation workflows to streamline repetitive in-game progression tasks.
 
 <p align="center">
-  <img width="279" height="783" alt="image" src="https://github.com/user-attachments/assets/43d068df-9e68-4370-8359-06f1108e4a27" />
-  <img width="277" height="914" alt="image" src="https://github.com/user-attachments/assets/85ee9231-7723-47ea-8796-9f361863387a" />
-  <img width="280" height="786" alt="image" src="https://github.com/user-attachments/assets/028d6b76-d094-40c5-bf82-fd915f44598c" />
+  <img width="274" height="808" alt="Screenshot 2026-06-26 040818" src="https://github.com/user-attachments/assets/0fd06883-ec59-439c-8efb-c03155ae297b" />
+  <img width="275" height="938" alt="Screenshot 2026-06-26 040751" src="https://github.com/user-attachments/assets/34b25bb0-0e3b-4576-90af-b29aee57dbbf" />
+  <img width="274" height="811" alt="Screenshot 2026-06-26 040854" src="https://github.com/user-attachments/assets/ecb8dc82-b856-4ce0-8719-1ad3cf49e751" />
 </p>
 
 ---
@@ -52,6 +52,10 @@ Before installing, ensure your system meets the following layout and control req
   * **Control Scheme:** Must use the native **WASD control layout** exclusively. Custom mappings or controller overlays will cause the automation routing to drop inputs.
   * **Background Execution:** Fully supports advanced background play. Armed with a **Game Lock Engine**, input instructions transmit native activation signals directly to the target canvas window, forcing the game to process macro routines uninterrupted even when out of focus. **CRITICAL:** An unfocused windowed game client will **NOT** run the script properly unless it is explicitly targeted and locked using the interface's dedicated **Lock Button**.
 
+ <p align="center">
+  <img width="2559" height="1439" alt="Screenshot 2026-06-26 041047" src="https://github.com/user-attachments/assets/0c1f0345-0267-415d-9a8b-5fd261c300d3" />
+</p>
+
 ---
 
 ## 📥 Installation
@@ -88,9 +92,6 @@ Before installing, ensure your system meets the following layout and control req
 * 🗮 **DPI-Safe Structural Elements:** Replaced native OS slider components with an entirely custom system, fully protecting the window from layout clipping bugs caused by Windows display scaling.
 * 🔘 **Sleek Tier Toggle Buttons:** Features dedicated **STANDARD** and **PREMIUM** buttons to quickly toggle your game edition layout instead of clunky old checkboxes.
 * 🛞 **Draggable Wheelspin Panel Subsystem:** Loop sequences and tracking for farming regular/Super Wheelspins have been moved into a modular, independent sub-panel interface. This auxiliary window automatically computes its layout to spawn centered relative to the master UI, supports fluid click-and-drag re-positioning, and inherits global dark/light styles.
-  
-  ![Draggable Wheelspin Panel Interface](placeholder_image_link_wheelspin_panel)
-
 * 🔄 **Keep or Sell Choice:** Integrated UI toggles for **KEEP** and **SELL** rules, allowing you to choose whether the macro automatically sells duplicate prize cars for credits or saves them to your garage.
 * 👁️ **Fuzzy Optical Character Recognition (OCR):** Integrates `OCR.ahk` alongside specialized parsing functions. Features a **Fuzzy Edit-Distance String Recognition Pipeline** which replaces rigid exact-string matches with a case-insensitive mathematical similarity scoring system, letting the macro safely absorb subtle OCR misreads without halting operations. Optimized extensively for **1080p target canvas monitors**.
 * 🔒 **Strict Handle Pointer Targeting (`HWND`):** Abandons fragile text title tracking in favor of binding directly to a unique window descriptor identification token (`HWND`). Background micro-automation sequences remain fully isolated from desktop focus changes, overlapping apps, or title string renames.
@@ -105,12 +106,13 @@ Before installing, ensure your system meets the following layout and control req
 * 📉 **Advanced Skill Point Verification:** Real-time pre-flight and post-race character logic to securely track skill investments and prevent zero-balance loop crashes.
 * 🛠️ **Developer Diagnostic Tool:** Integrated automated coordinate/color calibration utility.
 * 🔍 **Visual Bounding Zone Diagnostic Overlay:** Provides an adjustable, semi-transparent colored bounding box overlay that hooks directly onto your game window dimensions to outline exactly where automated color-scanning and optical text parsing routines are scraping data in real-time.
-
-  ![Visual Bounding Zone Diagnostic Overlay](placeholder_image_link_diagnostic_overlay)
-
 * 📁 **Centralized File System Configuration Sync:** Standardizes a local `.ini` configuration framework to cache structural variable settings (custom tracks, car indices, loop multipliers, viewport configurations, licensing tiers) on your machine for seamless initialization across reboots.
 * 🚀 **Heuristic Application Path Discovery Matrix:** An autonomous background engine scanner that queries local Windows Registry keys, traces registered App Paths, and checks default system directories across multiple storage drives to locate the game executable without requiring manual path specifications.
 * 🖼️ **Viewport Placement & State Transformation Suite:** Functional hotkeys allowing immediate windowed-to-fullscreen layout modifications, assigning absolute "Always On Top" layering hierarchies to the target canvas, and granting users mouse-bound click-and-drag spatial displacement to fluidly move the viewport.
+
+<p align="center">
+  <img width="233" height="202" alt="Screenshot 2026-06-26 040918" src="https://github.com/user-attachments/assets/076c9f87-f0d8-422e-9ce1-88814e6648a8" />
+</p>
 
 ---
 
@@ -331,7 +333,7 @@ For the pixel colour synchronization system to work at maximum speed and accurac
 The dynamic pixel engine samples hex color data across coordinates located on the left 1/3 of the display workspace. If background apps, streaming overlays, or Windows system notification banners obscure any section of the screen's left half, the pixel scanner will read false values, resulting in a **Sync Error / Menu Timeout**. Press F5 to toggle the Detection Zone layout; the area covered in red is the safe zone.
 
 <p align="center">
-  <img width="2563" height="1453" alt="Screenshot 2026-06-11 025901" src="https://github.com/user-attachments/assets/700ce2ab-6d03-474a-8dfb-fa6c46e263d9">
+  <img width="2559" height="1439" alt="Screenshot 2026-06-26 043303" src="https://github.com/user-attachments/assets/1f8464f8-db8f-4093-8504-ba8fe5f423b0" />
 </p>
 
 ### 📏 HUD Safe Frame Calibration
@@ -387,6 +389,7 @@ Doing either of these stops Windows from rendering the game engine to your graph
 
 ### Q: Do I still need a native 16:9 monitor layout to run the application?
 **A:** No longer mandatory! While the internal matrix remains mapped onto a 16:9 ratio grid, users with non-native display arrays (e.g., Ultra-wide 21:9 or 16:10) can deploy windowed mode through "🗗" button on the macro interface dashboard. Because the macro evaluates input data relative strictly to the bounding window handles rather than monitor coordinates, execution tracks perfectly across bordered 16:9 setups.
+
 ---
 
 ## ⚠️ Important Warning (READ BEFORE USE)
@@ -433,6 +436,6 @@ This automation tool operates entirely via keyboard simulation methods and does 
 
 <p align="center">
   <a href="https://ko-fi.com/mhaziqiqbal">
-    <img src="https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white" width="200" alt="Support me on Ko-fi">
+    <img width="350" height="190" alt="image" src="https://github.com/user-attachments/assets/3791e71d-9ecb-4e81-811a-6e153118db1d" width="180" alt="Support me on Ko-fi"/>
   </a>
 </p>
